@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Álbum Copa 2026</title>
+  <!-- Mantenha seu layout/CSS/links existentes aqui. Este arquivo contém os IDs usados por public/js/auth.js. -->
+</head>
+<body>
+  <!-- === Área de Login (adapte ao seu layout) === -->
+  <section id="login-area">
+    <h1>Login</h1>
+    <form id="form-login">
+      <label for="login-identifier">ID ou E-mail</label><br/>
+      <input id="login-identifier" name="identifier" required /><br/>
+      <label for="login-senha">Senha (6 chars)</label><br/>
+      <input id="login-senha" name="senha" type="password" required maxlength="6"/><br/>
+      <button type="submit">Entrar</button>
+      <div id="login-msg" style="margin-top:8px;color:#900;"></div>
+    </form>
+  </section>
+
+  <!-- === Área de Cadastro (adapte ao seu layout) === -->
+  <section id="register-area">
+    <h1>Cadastro</h1>
+    <form id="form-register">
+      <label for="register-id">ID (3 chars)</label><br/>
+      <input id="register-id" name="id" required maxlength="3"/><br/>
+      <label for="register-nome">Nome</label><br/>
+      <input id="register-nome" name="nome" required/><br/>
+      <label for="register-senha">Senha (6 chars)</label><br/>
+      <input id="register-senha" name="senha" type="password" required maxlength="6"/><br/>
+      <label for="register-email">E-mail</label><br/>
+      <input id="register-email" name="email" type="email" required/><br/>
+      <button type="submit">Cadastrar</button>
+      <div id="register-msg" style="margin-top:8px;color:#900;"></div>
+    </form>
+  </section>
+
+  <div id="global-msg" style="margin-top: 16px;"></div>
+
+  <!-- Botão de logout (opcional) -->
+  <button id="btn-logout" style="display:none;">Sair</button>
+
+  <!-- Botão de abrir webmail no mobile (exemplo) -->
+  <button data-open-webmail="usuario@exemplo.com">Abrir webmail</button>
+
+  <!-- Carrega o script de autenticação -->
+  <script src="/js/auth.js" defer></script>
+</body>
+</html>
