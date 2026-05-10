@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Troca de Figurinhas 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/auth.js" defer></script>
+    <script src="js/chat.js" defer></script>
+    <script src="js/stickers.js" defer></script>
+    <script src="js/trades.js" defer></script>
+    <script src="js/app.js" defer></script>
+</head>
+<body class="bg-gray-100 h-screen flex flex-col overflow-hidden text-gray-800">
+
+    <header class="bg-green-700 text-white p-4 flex justify-between items-center shadow-md z-10 shrink-0">
+        <h1 class="text-xl font-bold">Copa 2026</h1>
+        <div id="user-status" class="text-sm">
+            <span class="inline-block w-2 h-2 bg-red-400 rounded-full mr-1"></span> Offline
+        </div>
+    </header>
+
+    <main id="main-content" class="flex-1 overflow-y-auto p-4 pb-20">
+        <div class="text-center mt-10">
+            <h2 class="text-2xl font-semibold mb-2">Bem-vindo!</h2>
+            <p class="text-gray-600">Selecione uma opção no menu abaixo para começar.</p>
+        </div>
+    </main>
+
+    <nav class="bg-white border-t border-gray-200 fixed bottom-0 w-full flex justify-around p-3 z-10 text-xs">
+        <button onclick="app.loadModule('auth')" class="flex flex-col items-center text-gray-500 hover:text-green-700 focus:text-green-700 transition-colors">
+            <i class="fas fa-user-plus text-xl mb-1"></i>
+            <span>Cadastro</span>
+        </button>
+        <button onclick="app.loadModule('chat')" class="flex flex-col items-center text-gray-500 hover:text-green-700 focus:text-green-700 transition-colors">
+            <i class="fas fa-comments text-xl mb-1"></i>
+            <span>Chat</span>
+        </button>
+        <button onclick="app.loadModule('stickers')" class="flex flex-col items-center text-gray-500 hover:text-green-700 focus:text-green-700 transition-colors">
+            <i class="fas fa-book text-xl mb-1"></i>
+            <span>Minhas Fig.</span>
+        </button>
+        <button onclick="app.loadModule('trades')" class="flex flex-col items-center text-gray-500 hover:text-green-700 focus:text-green-700 transition-colors">
+            <i class="fas fa-exchange-alt text-xl mb-1"></i>
+            <span>Trocas</span>
+        </button>
+        <button onclick="app.logout()" class="flex flex-col items-center text-red-500 hover:text-red-700 transition-colors">
+            <i class="fas fa-sign-out-alt text-xl mb-1"></i>
+            <span>Sair</span>
+        </button>
+    </nav>
+
+    </body>
+
+</html>
