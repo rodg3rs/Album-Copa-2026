@@ -4,84 +4,126 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
+
 const app = express();
 app.use(express.json());
 app.use(cors());
-// Cliente Turso DB (Dados do seu .env)
+
 const db = createClient({
-url: process.env.TURSO_URL,
-authToken: process.env.TURSO_TOKEN,
+    url: process.env.TURSO_URL,
+    authToken: process.env.TURSO_TOKEN,
 });
-// Middleware para verificar JWT
+
+// Configuração do E-mail (Nodemailer)
+const transporter = nodemailer.createTransport({
+    service: 'gmail', 
+    auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
+});
+
+// Middleware de Autenticação
 const verifyToken = (req, res, next) => {
-const token = req.headers['authorization']?.split(' ')[1];
-if (!token) return res.status(403).json({ error: "Token não fornecido" });
-jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-if (err) return res.status(401).json({ error: "Token inválido" });
-req.userId = decoded.id;
-next();
-});
+    const token = req.headers['authorization']?.split(' ')[1];
+    if (!token) return res.status(403).json({ error: "Acesso negado" });
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) return res.status(401).json({ error: "Sessão expirada" });
+        req.user = decoded;
+        next();
+    });
 };
 
+// A. CADASTRO E VALIDAÇÕES (dManos) [cite: 16, 18, 20]
 app.post('/api/register', async (req, res) => {
-const { id, nome, senha, email } = req.body;
+    const { nome, senha, email } = req.body;
 
-try {
-await db.execute({
-sql: "INSERT INTO dManos (ID, Nome, eMail, Senha) VALUES (?, ?, ?, ?)",
-args: [id, nome, email, senha]
+    if (senha.length !== 6) return res.status(400).json({ error: "Senha deve ter 6 caracteres" });
+    if (!email.includes('@')) return res.status(400).json({ error: "E-mail inválido" });
+
+    try {
+        const lastUser = await db.execute("SELECT MAX(CAST(ID AS INTEGER)) as maxId FROM dManos");
+        let nextId = (lastUser.rows[0].maxId || 99) + 1; 
+        if (nextId > 999) return res.status(400).json({ error: "Limite de usuários atingido" });
+
+        await db.execute({
+            sql: "INSERT INTO dManos (ID, Nome, eMail, Senha) VALUES (?, ?, ?, ?)",
+            args: [String(nextId), nome, email, senha]
+        });
+
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Cadastro Copa 2026",
+            html: `<h1>Bem-vindo, ${nome}!</h1><p>Seu ID de acesso é: <b>${nextId}</b></p>`
+        });
+
+        res.json({ success: true, id: nextId });
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
-// Inicializa álbum e repetidas vazios para o novo usuário
-await db.execute({ sql: "INSERT INTO dAlbum (ID, Nome) VALUES (?, ?)", args: [id,
-nome] });
-await db.execute({ sql: "INSERT INTO dRepetida (ID, Nome) VALUES (?, ?)", args:
-[id, nome] });
-// Envio de Email (Configurar transportador nodemailer)
-console.log(`Simulando envio de email para ${email}: Bem-vindo ao Álbum 2026!`);
-res.json({ success: true, message: "Bem-vindo! Cadastro efetivado." });
-} catch (e) {
-res.status(500).json({ error: e.message });
-}
+
+// LOGIN
+app.post('/api/login', async (req, res) => {
+    const { id, senha } = req.body;
+    const result = await db.execute({
+        sql: "SELECT * FROM dManos WHERE ID = ? AND Senha = ?",
+        args: [String(id), senha]
+    });
+
+    if (result.rows.length > 0) {
+        const token = jwt.sign({ id: result.rows[0].ID, nome: result.rows[0].Nome }, process.env.JWT_SECRET);
+        res.json({ token, nome: result.rows[0].Nome });
+    } else { res.status(401).json({ error: "ID ou Senha incorretos" }); }
 });
 
-
+// B. CHAT COM LIMPEZA DE 24H (dChat) [cite: 22, 24, 26]
 app.post('/api/chat', verifyToken, async (req, res) => {
-const { mensagem } = req.body;
-const agora = new Date();
-try {
-await db.execute({
-sql: "INSERT INTO dChat (ID, Mensagem, Data, Hora) VALUES (?, ?, ?, ?)",
-args: [req.userId, mensagem, agora.toLocaleDateString(),
-agora.toLocaleTimeString()]
-});
-// Limpeza de mensagens com mais de 24 horas
-// Nota: Em produção, isto pode ser um Cron Job, aqui é feito no 'push'
-const ontem = new Date(agora.getTime() - (24 * 60 * 60 *
-1000)).toLocaleDateString();
-await db.execute({
-sql: "DELETE FROM dChat WHERE Data < ?",
-args: [ontem]
-});
-res.sendStatus(201);
-} catch (e) { res.status(500).json({ error: e.message }); }
+    const { mensagem } = req.body;
+    const agora = new Date();
+    const ts = agora.getTime();
+    try {
+        await db.execute({
+            sql: "INSERT INTO dChat (ID, Mensagem, Data, Hora, Timestamp) VALUES (?, ?, ?, ?, ?)",
+            args: [req.user.id, mensagem, agora.toLocaleDateString(), agora.toLocaleTimeString(), ts]
+        });
+        await db.execute({ sql: "DELETE FROM dChat WHERE Timestamp < ?", args: [ts - 86400000] });
+        res.sendStatus(201);
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// Exemplo Simplificado para "Eu Quero" (Cruzamento de Álbuns)
-app.get('/api/match/want', verifyToken, async (req, res) => {
-try {
-// Busca figurinhas que faltam no dAlbum do usuário logado
-// e verifica quem as tem na tabela dRepetida
-const query = `
-SELECT R.Nome as Usuario, 'R1' as Figurinha
-FROM dRepetida R
-JOIN dAlbum A ON A.ID = ?
-WHERE A.A1 = '0' AND R.R1 = '1'
-UNION
-SELECT R.Nome, 'R2' FROM dRepetida R JOIN dAlbum A ON A.ID = ?
-WHERE A.A2 = '0' AND R.R2 = '1'
--- (... repetir lógica ou otimizar via código para as 200 colunas)
-`;
-const result = await db.execute({ sql: query, args: [req.userId, req.userId] });
-res.json(result.rows);
-} catch (e) { res.status(500).send(e.message); }
+app.get('/api/chat', verifyToken, async (req, res) => {
+    const result = await db.execute("SELECT m.Nome, c.* FROM dChat c JOIN dManos m ON c.ID = m.ID ORDER BY Timestamp DESC LIMIT 50");
+    res.json(result.rows);
 });
+
+// C. LÓGICA DE FIGURINHAS (dControle - Linhas Alfanuméricas) 
+app.post('/api/stickers', verifyToken, async (req, res) => {
+    const { stamp, tipo, acao } = req.body; // tipo: 'A' (Album) ou 'R' (Repetida)
+    try {
+        if (acao === 'add') {
+            await db.execute({ sql: "INSERT INTO dControle (ID, Stamp, Tipo) VALUES (?, ?, ?)", args: [req.user.id, stamp, tipo] });
+        } else {
+            await db.execute({ sql: "DELETE FROM dControle WHERE ID = ? AND Stamp = ? AND Tipo = ?", args: [req.user.id, stamp, tipo] });
+        }
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/my-stickers', verifyToken, async (req, res) => {
+    const { tipo } = req.query;
+    const result = await db.execute({ sql: "SELECT Stamp FROM dControle WHERE ID = ? AND Tipo = ?", args: [req.user.id, tipo] });
+    res.json(result.rows.map(r => r.Stamp));
+});
+
+// D. TROCAS (Cruzamento de Dados) [cite: 40, 44]
+app.get('/api/match/want', verifyToken, async (req, res) => {
+    const query = `
+        SELECT DISTINCT m.Nome, m.eMail, c.Stamp 
+        FROM dControle c 
+        JOIN dManos m ON c.ID = m.ID 
+        WHERE c.Tipo = 'R' AND c.ID != ?
+        AND c.Stamp NOT IN (SELECT Stamp FROM dControle WHERE ID = ? AND Tipo = 'A')
+    `;
+    const result = await db.execute({ sql: query, args: [req.user.id, req.user.id] });
+    res.json(result.rows);
+});
+
+app.listen(process.env.PORT || 3000, () => console.log("Servidor rodando!"));
