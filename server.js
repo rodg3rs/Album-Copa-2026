@@ -6,7 +6,7 @@ const nodemailer = require("nodemailer");
 const cors = require("cors");
 
 // Conexão com Turso (SQLite remoto)
-const { createClient } = require("@tursodatabase/node");
+const { createClient } = require("@libsql/client");
 const turso = createClient({
   url: process.env.TURSO_URL,
   authToken: process.env.TURSO_TOKEN
