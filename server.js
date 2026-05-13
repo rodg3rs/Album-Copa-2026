@@ -74,12 +74,9 @@ app.post("/chat", async (req, res) => {
   const { mensagem } = req.body;
   const data = new Date();
   try {
-    await turso.execute("INSERT INTO dChat (ID, Mensagem, Data, Hora) VALUES (?, ?, ?, ?)", [
-      req.session.user.ID,
-      mensagem,
-      data.toLocaleDateString(),
-      data.toLocaleTimeString()
-    ]);
+    await turso.execute(  "INSERT INTO dChat (ID, Mensagem, Data, Hora, Timestamp) VALUES (?, ?, ?, ?, ?)",
+  [req.session.user.ID, mensagem, data.toLocaleDateString(), data.toLocaleTimeString(), Date.now()]
+);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -92,7 +89,10 @@ app.post("/album", async (req, res) => {
   const { figurinhas } = req.body; // array de objetos {codigo, tipo: "A" ou "R"}
   try {
     for (let f of figurinhas) {
-      await turso.execute("UPDATE dAlbum SET Tipo = ? WHERE ID = ? AND Codigo = ?", [f.tipo, req.session.user.ID, f.codigo]);
+      await turso.execute(
+        "INSERT OR REPLACE INTO dControle (ID, Stamp, Tipo) VALUES (?, ?, ?)",
+        [req.session.user.ID, f.stamp, f.tipo]
+      );
     }
     res.json({ success: true, message: "Álbum atualizado!" });
   } catch (err) {
