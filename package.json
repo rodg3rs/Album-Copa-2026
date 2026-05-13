@@ -20,5 +20,14 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "nodemailer": "^8.0.7"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rodg3rs/Album-Copa2026.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rodg3rs/Album-Copa2026/issues"
+  },
+  "homepage": "https://github.com/rodg3rs/Album-Copa2026#readme"
 }
