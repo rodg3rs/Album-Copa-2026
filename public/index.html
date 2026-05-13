@@ -5,37 +5,79 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Troca de Figurinhas - Copa 2026</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 </head>
 <body>
 
-  <!-- Container Superior -->
-  <header id="top-container">
-    <h1>Troca de Figurinhas</h1>
-    <div id="user-info">
-      <span id="user-name">Não logado</span>
-      <img src="icons/login.png" alt="Login" id="login-icon">
-    </div>
-  </header>
+<!-- Container Superior -->
+<header id="top-container">
+  <h1>Troca de Figurinhas</h1>
+  <div id="user-info">
+    <span id="login-status"></span>
+    <a href="login.html" target="content-frame" id="login-link">
+      <i class="fa-regular fa-circle-user"></i>
+      <span>Login</span>
+    </a>
+  </div>
+</header>
 
   <!-- Container Central -->
   <main id="main-container">
-    <iframe id="content-frame" src="login.html"></iframe>
+    <iframe id="content-frame"></iframe>
   </main>
 
-  <!-- Container Inferior (Menu) -->
-  <footer id="bottom-container">
-    <nav>
-      <ul>
-        <li><a href="cadastro.html" target="content-frame">Cadastrar</a></li>
-        <li><a href="album.html" target="content-frame">Meu Álbum</a></li>
-        <li><a href="album.html?view=repetidas" target="content-frame">Minhas Repetidas</a></li>
-        <li><a href="album.html?view=quero" target="content-frame">Eu Quero</a></li>
-        <li><a href="album.html?view=troco" target="content-frame">Eu Troco</a></li>
-        <li><a href="chat.html" target="content-frame">Chat</a></li>
-        <li><a href="sair.html" target="content-frame">Sair</a></li>
-      </ul>
-    </nav>
-  </footer>
+<!-- Container Inferior (Menu) -->
+<footer id="bottom-container">
+  <nav>
+    <ul>
+      <li>
+        <a href="cadastro.html" target="content-frame">
+          <i class="fa-regular fa-circle-user"></i>
+          <span>Cadastrar</span>
+        </a>
+      </li>
+      <li>
+        <a href="album.html" target="content-frame">
+          <i class="fa-solid fa-book"></i>
+          <span>Meu Álbum</span>
+        </a>
+      </li>
+      <li>
+        <a href="album.html?view=repetidas" target="content-frame">
+          <i class="fa-solid fa-clone"></i>
+          <span>Repetidas</span>
+        </a>
+      </li>
+      <li>
+        <a href="album.html?view=quero" target="content-frame">
+          <i class="fa-solid fa-star"></i>
+          <span>Eu Quero</span>
+        </a>
+      </li>
+      <li>
+        <a href="album.html?view=troco" target="content-frame">
+          <i class="fa-solid fa-arrows-rotate"></i>
+          <span>Eu Troco</span>
+        </a>
+      </li>
+      <li>
+        <a href="chat.html" target="content-frame">
+          <i class="fa-regular fa-comments"></i>
+          <span>Chat</span>
+        </a>
+      </li>
+      <li>
+        <a href="sair.html" target="content-frame">
+          <i class="fa-solid fa-right-from-bracket"></i>
+          <span>Sair</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</footer>
+
+
 
 </body>
 </html>
