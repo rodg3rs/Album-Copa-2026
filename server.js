@@ -6,8 +6,6 @@ const session = require("express-session");
 const nodemailer = require("nodemailer");
 const cors = require("cors");
 const path = require("path");
-app.use(express.static(path.join(__dirname, "public")));
-
 
 // Conexão com Turso (SQLite remoto)
 const { createClient } = require("@libsql/client");
@@ -24,6 +22,14 @@ app.use(session({
   resave: false,
   saveUninitialized: true
 }));
+
+// Servir arquivos estáticos (HTML, CSS, JS)
+app.use(express.static(path.join(__dirname, "public")));
+
+// Rota raiz para teste
+app.get("/", (req, res) => {
+  res.send("Servidor do Troca de Figurinhas está rodando!");
+});
 
 // Configuração de envio de e-mail
 const transporter = nodemailer.createTransport({
