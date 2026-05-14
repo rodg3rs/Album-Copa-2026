@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Controle de Figurinhas</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 12px; }
+    .album-container { max-width: 1100px; margin: 0 auto; }
+    .controls { display:flex; gap:10px; align-items:center; margin-bottom:12px; }
+    .grid { display:grid; grid-template-columns: repeat(10, 1fr); gap:8px; }
+    .team-block { border:1px solid #ddd; padding:6px; background:#fafafa; }
+    .team-title { font-weight:700; margin-bottom:6px; font-size:14px; }
+    .stamps { display:grid; grid-template-columns: repeat(5, 1fr); gap:6px; }
+    .stamp { position:relative; width:100%; padding-top:100%; background:#eee; overflow:hidden; cursor:pointer; border-radius:4px; }
+    .stamp .content { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; }
+    .stamp img { max-width:90%; max-height:90%; display:block; }
+    .stamp .code { font-size:12px; margin-top:4px; color:#333; }
+    .stamp.black { background:#000; color:#000; }
+    .stamp.black .code { color:#000; }
+    .stamp input[type="checkbox"] { display:none; }
+    .stamp.checked { outline:3px solid #2b8aef; }
+    .actions { margin-top:12px; display:flex; gap:8px; }
+    .msg { margin-top:8px; min-height:20px; }
+  </style>
+</head>
+<body>
+  <div class="album-container">
+    <h2 id="title">Meu Álbum</h2>
+
+    <div class="controls">
+      <div>Visualizando: <strong id="view-label">Álbum</strong></div>
+      <div style="margin-left:auto">
+        <button id="btn-save">Salvar</button>
+        <button id="btn-back">Voltar</button>
+      </div>
+    </div>
+
+    <div id="teams-grid" class="grid"></div>
+
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <script>
+    // Lista de seleções (exemplo). Substitua/complete com as 48 seleções reais.
+    const teams = [
+      "MEX","BRA","ARG","GER","FRA","ESP","ENG","POR","USA","CAN",
+      "JPN","KOR","SUI","NED","BEL","CRO","URU","COL","SEN","MAR",
+      "GHA","IRN","AUS","QAT","KSA","CMR","POL","SRB","TUN","ECU",
+      "CRC","PAN","PER","BOL","PAR","VEN","ISL","NOR","SCO","WAL",
+      "CZE","AUT","HUN","SVK","MEX2" // exemplo extra
+    ];
+    // Ajuste teams para conter exatamente as seleções que você quer (48).
+    // Cada seleção terá 20 figurinhas: CODE1..CODE20
+
+    // Determina view e tipo
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get("view") || "album"; // album | repetidas
+    const tipo = view === "repetidas" ? "R" : "A";
+    document.getElementById("title").textContent = view === "repetidas" ? "Minhas Repetidas" : "Meu Álbum";
+    document.getElementById("view-label").textContent = view === "repetidas" ? "Repetidas" : "Álbum";
+
+    const grid = document.getElementById("teams-grid");
+    const msg = document.getElementById("msg");
+
+    // Cria estrutura do grid (cada bloco = seleção com 20 stamps)
+    function buildGrid() {
+      grid.innerHTML = "";
+      for (let code of teams) {
+        const block = document.createElement("div");
+        block.className = "team-block";
+        block.innerHTML = `<div class="team-title">${code}</div><div class="stamps" data-team="${code}"></div>`;
+        const stampsContainer = block.querySelector(".stamps");
+        for (let i = 1; i <= 20; i++) {
+          const stampCode = `${code}${i}`;
+          const stampEl = document.createElement("label");
+          stampEl.className = "stamp";
+          stampEl.dataset.stamp = stampCode;
+          stampEl.innerHTML = `
+            <input type="checkbox" name="stamp" value="${stampCode}">
+            <div class="content">
+              <img src="images/stamps/${stampCode}.png" alt="${stampCode}" onerror="this.style.display='none'">
+              <div class="code">${stampCode}</div>
+            </div>
+          `;
+          // clique alterna checked
+          stampEl.addEventListener("click", function(e){
+            const cb = this.querySelector("input[type=checkbox]");
+            cb.checked = !cb.checked;
+            updateVisual(this, cb.checked);
+          });
+          stampsContainer.appendChild(stampEl);
+        }
+        grid.appendChild(block);
+      }
+    }
+
+    // Atualiza visual do stamp conforme view e checked
+    function updateVisual(stampEl, checked) {
+      if (view === "album") {
+        // se tem (checked) -> preto e esconder código; se não -> mostrar imagem e código
+        if (checked) {
+          stampEl.classList.add("black");
+          stampEl.classList.remove("checked");
+        } else {
+          stampEl.classList.remove("black");
+        }
+      } else {
+        // repetidas: se tem (checked) -> mostrar; se não -> preto
+        if (checked) {
+          stampEl.classList.remove("black");
+        } else {
+          stampEl.classList.add("black");
+        }
+      }
+    }
+
+    // Marca os stamps que já existem no dControle
+    async function loadExisting() {
+      try {
+        const res = await fetch(`/controle?tipo=${tipo}`);
+        const data = await res.json();
+        if (!data.success) {
+          msg.textContent = data.error || "Erro ao carregar dados";
+          return;
+        }
+        const existing = new Set(data.stamps || []);
+        // marcar checkboxes e ajustar visual
+        document.querySelectorAll(".stamp").forEach(el => {
+          const code = el.dataset.stamp;
+          const cb = el.querySelector("input[type=checkbox]");
+          const has = existing.has(code);
+          cb.checked = has;
+          updateVisual(el, has);
+        });
+      } catch (err) {
+        msg.textContent = "Erro de conexão ao carregar álbum";
+      }
+    }
+
+    // Coleta selecionados e envia ao servidor
+    async function save() {
+      const checked = Array.from(document.querySelectorAll("input[name='stamp']:checked"))
+        .map(cb => cb.value);
+      try {
+        const res = await fetch("/controle", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tipo, stamps: checked })
+        });
+        const data = await res.json();
+        if (data.success) {
+          msg.style.color = "green";
+          msg.textContent = data.message || "Salvo com sucesso";
+          // recarrega para garantir visual consistente
+          setTimeout(() => {
+            loadExisting();
+          }, 600);
+        } else {
+          msg.style.color = "red";
+          msg.textContent = data.error || "Erro ao salvar";
+        }
+      } catch (err) {
+        msg.style.color = "red";
+        msg.textContent = "Erro de conexão ao salvar";
+      }
+    }
+
+    // Voltar (limpar tela e voltar ao home)
+    function voltar() {
+      window.parent.document.getElementById("content-frame").src = "home.html";
+    }
+
+    // Inicialização
+    buildGrid();
+    loadExisting();
+
+    document.getElementById("btn-save").addEventListener("click", save);
+    document.getElementById("btn-back").addEventListener("click", voltar);
+  </script>
+</body>
+</html>

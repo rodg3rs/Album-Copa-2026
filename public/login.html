@@ -22,44 +22,56 @@
     <div id="login-msg"></div>
   </div>
 
-  <script>
-    document.getElementById("login-form").addEventListener("submit", async function(e) {
-      e.preventDefault();
+ <script>
+document.getElementById("login-form").addEventListener("submit", async function(e) {
+  e.preventDefault();
 
-      const nome = document.getElementById("nome").value;
-      const senha = document.getElementById("senha").value;
+  const nome = document.getElementById("nome").value;
+  const senha = document.getElementById("senha").value;
+  const msgDiv = document.getElementById("login-msg");
 
-      try {
-        const response = await fetch("/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nome, senha })
-        });
-
-        const result = await response.json();
-        const msgDiv = document.getElementById("login-msg");
-
-        if (result.success) {
-          msgDiv.innerHTML = `<p style="color:green;">${result.message}</p>`;
-
-          // Atualiza o topo com nome do usuário
-          window.parent.document.getElementById("login-status").textContent = "Logado como " + result.nome;
-          window.parent.document.getElementById("login-link").innerHTML = `
-            <i class="fa-solid fa-user-check"></i>
-            <span>${result.nome}</span>
-          `;
-
-          // Redireciona para home ou álbum dentro do dashboard
-          setTimeout(() => {
-            window.parent.document.getElementById("content-frame").src = "home.html";
-          }, 2000);
-        } else {
-          msgDiv.innerHTML = `<p style="color:red;">${result.error || result.message}</p>`;
-        }
-      } catch (err) {
-        document.getElementById("login-msg").innerHTML = `<p style="color:red;">Erro de conexão com servidor</p>`;
-      }
+  try {
+    const response = await fetch("/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nome, senha })
     });
-  </script>
+
+    const result = await response.json();
+
+    if (result.success) {
+      msgDiv.innerHTML = `<p style="color:green;">${result.message}</p>`;
+
+      // Atualiza o topo do dashboard com nome do usuário
+      window.parent.document.getElementById("login-status").textContent = "Logado como " + result.nome;
+
+      // Substitui o link de login pelo estado logado (ícone + nome)
+      window.parent.document.getElementById("login-link").innerHTML = `
+        <i class="fa-solid fa-user-check"></i>
+        <span>${result.nome}</span>
+      `;
+
+      // Guarda o ID do usuário no parent (opcional)
+      if (result.id) {
+        window.parent.document.getElementById("login-link").dataset.userId = result.id;
+        window.parent.document.getElementById("login-status").dataset.userId = result.id;
+      }
+
+      // Redireciona para o controle/album dentro do dashboard
+      setTimeout(() => {
+        window.parent.document.getElementById("content-frame").src = "controle.html?view=album";
+      }, 1000);
+
+    } else {
+      // Mensagem de erro retornada pelo servidor
+      msgDiv.innerHTML = `<p style="color:red;">${result.error || result.message || "Nome ou senha inválidos."}</p>`;
+    }
+  } catch (err) {
+    msgDiv.innerHTML = `<p style="color:red;">Erro de conexão com servidor</p>`;
+    console.error("Login error:", err);
+  }
+});
+</script>
+
 </body>
 </html>
