@@ -101,13 +101,15 @@ app.post("/chat", async (req, res) => {
 
 // Álbum (A/R)
 // Retorna stamps do usuário por tipo (A ou R)
+// ---------------- CONTROLE ----------------
+// Retorna stamps do usuário por tipo (A ou R)
 app.get("/controle", async (req, res) => {
   if (!req.session.user) return res.status(403).json({ success:false, error: "Não logado" });
   const tipo = (req.query.tipo || "A").toUpperCase();
   try {
     const result = await turso.execute({
       sql: "SELECT Stamp FROM dControle WHERE ID = ? AND Tipo = ?",
-      args: [req.session.user.ID, tipo]
+      args: [parseInt(req.session.user.ID), tipo]
     });
     const stamps = result.rows.map(r => r.Stamp);
     res.json({ success: true, stamps });
@@ -116,27 +118,27 @@ app.get("/controle", async (req, res) => {
   }
 });
 
-// Atualiza dControle para o usuário: insere novos e remove desmarcados
+// Atualiza dControle: insere novos e remove desmarcados
 app.post("/controle", async (req, res) => {
   if (!req.session.user) return res.status(403).json({ success:false, error: "Não logado" });
   const { tipo, stamps } = req.body;
-  const userId = req.session.user.ID;
+  const userId = parseInt(req.session.user.ID);
   const t = (tipo || "A").toUpperCase();
 
   try {
-    // 1) buscar existentes
+    // Buscar existentes
     const existingRes = await turso.execute({
       sql: "SELECT Stamp FROM dControle WHERE ID = ? AND Tipo = ?",
       args: [userId, t]
     });
     const existing = new Set(existingRes.rows.map(r => r.Stamp));
 
-    // 2) calcular diferenças
+    // Calcular diferenças
     const incoming = new Set(Array.isArray(stamps) ? stamps : []);
     const toInsert = [...incoming].filter(s => !existing.has(s));
     const toDelete = [...existing].filter(s => !incoming.has(s));
 
-    // 3) inserir novos (INSERT OR IGNORE para evitar duplicatas)
+    // Inserir novos
     for (let s of toInsert) {
       await turso.execute({
         sql: "INSERT OR IGNORE INTO dControle (ID, Stamp, Tipo) VALUES (?, ?, ?)",
@@ -144,9 +146,8 @@ app.post("/controle", async (req, res) => {
       });
     }
 
-    // 4) deletar removidos (se houver)
+    // Deletar removidos
     if (toDelete.length > 0) {
-      // montar placeholders
       const placeholders = toDelete.map(() => "?").join(",");
       const sql = `DELETE FROM dControle WHERE ID = ? AND Tipo = ? AND Stamp IN (${placeholders})`;
       await turso.execute({
@@ -160,7 +161,6 @@ app.post("/controle", async (req, res) => {
     res.status(500).json({ success:false, error: err.message });
   }
 });
-
 
 
 // Trocas (Eu Quero / Eu Troco)
