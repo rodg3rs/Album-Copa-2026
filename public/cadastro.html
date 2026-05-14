@@ -25,34 +25,38 @@
     <div id="cadastro-msg"></div>
   </div>
 
-  <script>
-    document.getElementById("cadastro-form").addEventListener("submit", async function(e) {
-      e.preventDefault();
+<script>
+  document.getElementById("cadastro-form").addEventListener("submit", async function(e) {
+    e.preventDefault();
 
-      const nome = document.getElementById("nome").value;
-      const email = document.getElementById("email").value;
-      const senha = document.getElementById("senha").value;
+    const nome = document.getElementById("nome").value;
+    const email = document.getElementById("email").value;
+    const senha = document.getElementById("senha").value;
 
-      try {
-        const response = await fetch("/cadastro", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nome, email, senha })
-        });
+    try {
+      const response = await fetch("/cadastro", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome, email, senha })
+      });
 
-        const result = await response.json();
-        const msgDiv = document.getElementById("cadastro-msg");
+      const result = await response.json();
+      const msgDiv = document.getElementById("cadastro-msg");
 
-        // Aguarda 2 segundos e volta ao dashboard
+      if (result.success) {
+        msgDiv.innerHTML = `<p style="color:green;">${result.message}</p>`;
+        // volta ao login dentro do dashboard
         setTimeout(() => {
           window.parent.document.getElementById("content-frame").src = "login.html";
         }, 2000);
       } else {
         msgDiv.innerHTML = `<p style="color:red;">Erro: ${result.error || result.message}</p>`;
-      } catch (err) {
-        document.getElementById("cadastro-msg").innerHTML = `<p style="color:red;">Erro de conexão com servidor</p>`;
       }
-    });
-  </script>
+    } catch (err) {
+      document.getElementById("cadastro-msg").innerHTML = `<p style="color:red;">Erro de conexão com servidor</p>`;
+    }
+  });
+</script>
+
 </body>
 </html>

@@ -44,37 +44,38 @@ const transporter = nodemailer.createTransport({
 
 // Cadastro
 app.post("/cadastro", async (req, res) => {
-  const { nome, senha, email } = req.body;
+  const { nome, email, senha } = req.body;
   try {
-    await turso.execute("INSERT INTO dManos (Nome, Senha, eMail) VALUES (?, ?, ?)", [nome, senha, email]);
-
-    // Envia e-mail de boas-vindas
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Bem-vindo ao Troca de Figurinhas",
-      text: `Olá ${nome}, seu cadastro foi realizado com sucesso!`
+    await turso.execute({
+      sql: "INSERT INTO dManos (nome, eMail, senha) VALUES (?, ?, ?)",
+      args: [nome, email, senha]
     });
-
     res.json({ success: true, message: "Cadastro realizado com sucesso!" });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    if (err.message.includes("UNIQUE constraint failed")) {
+      res.json({ success: false, error: "Este e-mail já está cadastrado." });
+    } else {
+      res.json({ success: false, error: "Erro ao cadastrar usuário." });
+    }
   }
 });
+
 
 // Login
 app.post("/login", async (req, res) => {
   const { nome, senha } = req.body;
   try {
-    const result = await turso.execute("SELECT * FROM dManos WHERE Nome = ? AND Senha = ?", [nome, senha]);
+    const result = await turso.execute({
+      sql: "SELECT * FROM dManos WHERE Nome = ? AND Senha = ?",
+      args: [nome, senha]
+    }
     if (result.rows.length > 0) {
-      req.session.user = result.rows[0];
-      res.json({ success: true, user: result.rows[0] });
+      res.json({ success: true, message: "Login realizado com sucesso!", nome: usuario.Nome });
     } else {
-      res.json({ success: false, message: "Usuário ou senha inválidos" });
+      res.json({ success: false, error: "Nome ou senha inválidos." });
     }
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.json({ success: false, error: "Erro ao realizar login." });
   }
 });
 

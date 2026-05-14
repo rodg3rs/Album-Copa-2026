@@ -52,6 +52,23 @@ body {
   text-decoration: underline;
 }
 
+
+/* Container central ocupa espaço entre header e footer */
+#main-container {
+  position: absolute;
+  top: 60px;    /* altura do header */
+  bottom: 70px; /* altura do footer */
+  left: 0;
+  right: 0;
+}
+
+#content-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+
 #bottom-container {
   background-color: #006400;
   color: white;
