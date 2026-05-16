@@ -6,11 +6,19 @@
 }
 
 body {
+  margin: 0;
+  padding: 0;
   font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
+  background: url("img/home.webp") no-repeat center center fixed;
+  background-size: cover;   /* cobre toda a tela */
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(255,255,255,0.7); /* branco translúcido */
+  z-index: -1; /* fica atrás do conteúdo */
 }
 
 /* Container Superior */
