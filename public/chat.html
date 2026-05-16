@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat - Troca de Figurinhas</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 80vh;
+      max-width: 600px;
+      margin: auto;
+      border: 1px solid #ccc;
+      background: rgba(255,255,255,0.8);
+      border-radius: 8px;
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+    }
+    .chat-message {
+      margin-bottom: 8px;
+      padding: 6px;
+      border-radius: 4px;
+    }
+    .chat-message.user {
+      background: #e0f7fa;
+      font-weight: bold;
+    }
+    .chat-message.other {
+      background: #f1f1f1;
+    }
+    .chat-input {
+      display: flex;
+      border-top: 1px solid #ccc;
+    }
+    .chat-input input {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      border-radius: 0 0 0 8px;
+    }
+    .chat-input button {
+      padding: 8px 12px;
+      border: none;
+      background: #4caf50;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 0 0 8px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-messages" id="chat-messages"></div>
+    <form class="chat-input" id="chat-form">
+      <input type="text" id="chat-text" placeholder="Digite sua mensagem..." required>
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <script>
+    const messagesDiv = document.getElementById("chat-messages");
+    const form = document.getElementById("chat-form");
+    const input = document.getElementById("chat-text");
+
+    async function loadMessages() {
+      const res = await fetch("/chat");
+      const data = await res.json();
+      if (!data.success) return;
+      messagesDiv.innerHTML = "";
+      data.messages.forEach(m=>{
+        const div = document.createElement("div");
+        div.className = "chat-message " + (m.user===data.currentUser ? "user":"other");
+        div.textContent = `${m.user}: ${m.text}`;
+        messagesDiv.appendChild(div);
+      });
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    form.addEventListener("submit", async e=>{
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+      await fetch("/chat", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ text })
+      });
+      input.value="";
+      loadMessages();
+    });
+
+    // Atualiza a cada 5 segundos
+    setInterval(loadMessages, 5000);
+    loadMessages();
+  </script>
+</body>
+</html>

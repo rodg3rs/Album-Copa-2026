@@ -268,6 +268,50 @@ app.get("/troco", async (req,res)=>{
   }
 });
 
+// GET mensagens do chat (últimas 24h)
+app.get("/chat", async (req,res)=>{
+  if (!req.session.user) return res.status(403).json({success:false,error:"Não logado"});
+  const now = Math.floor(Date.now()/1000);
+  const cutoff = now - 24*3600; // 24h atrás
+  try {
+    const result = await turso.execute({
+      sql:"SELECT dManos.Nome AS User, Mensagem, Timestamp FROM dChat JOIN dManos ON dChat.ID=dManos.ID WHERE Timestamp>=? ORDER BY Timestamp ASC",
+      args:[cutoff]
+    });
+    const messages = result.rows.map(r=>({
+      user:r.User,
+      text:r.Mensagem,
+      timestamp:r.Timestamp
+    }));
+    res.json({success:true,currentUser:req.session.user.Nome,messages});
+  } catch(err) {
+    res.status(500).json({success:false,error:err.message});
+  }
+});
+
+// POST nova mensagem
+app.post("/chat", async (req,res)=>{
+  if (!req.session.user) return res.status(403).json({success:false,error:"Não logado"});
+  const { text } = req.body;
+  const now = new Date();
+  const timestamp = Math.floor(Date.now()/1000);
+  try {
+    await turso.execute({
+      sql:"INSERT INTO dChat (ID, Mensagem, Data, Hora, Timestamp) VALUES (?, ?, ?, ?, ?)",
+      args:[
+        parseInt(req.session.user.ID),
+        text,
+        now.toISOString().split("T")[0],
+        now.toTimeString().split(" ")[0],
+        timestamp
+      ]
+    });
+    res.json({success:true});
+  } catch(err) {
+    res.status(500).json({success:false,error:err.message});
+  }
+});
+
 
 // Logout
 app.get("/logout", (req, res) => {
