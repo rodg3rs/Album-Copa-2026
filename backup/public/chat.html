@@ -66,56 +66,50 @@
   const form = document.getElementById("chat-form");
   const input = document.getElementById("chat-text");
 
-async function loadMessages() {
-  try {
-    const res = await fetch("/chat", { credentials: "include" });
-    const data = await res.json();
-    if (!data.success) {
-      console.warn("Não foi possível carregar chat:", data.error);
-      return;
+  async function loadMessages() {
+    try {
+      const res = await fetch("/chat");
+      const data = await res.json();
+      if (!data.success) {
+        console.warn("Não foi possível carregar chat:", data.error);
+        return;
+      }
+      // limpa antes de renderizar
+      messagesDiv.innerHTML = "";
+      data.messages.forEach(m => {
+        const div = document.createElement("div");
+        div.className = "chat-message " + (m.user === data.currentUser ? "user" : "other");
+        div.textContent = `${m.user}: ${m.text}`;
+        messagesDiv.appendChild(div);
+      });
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    } catch (err) {
+      console.error("Erro ao carregar mensagens:", err);
     }
-    messagesDiv.innerHTML = "";
-    data.messages.forEach(m => {
-      const div = document.createElement("div");
-      div.className = "chat-message " + (m.user === data.currentUser ? "user" : "other");
-      div.textContent = `${m.user}: ${m.text}`;
-      messagesDiv.appendChild(div);
-    });
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  } catch (err) {
-    console.error("Erro ao carregar mensagens:", err);
   }
-}
 
-form.addEventListener("submit", async e => {
-  e.preventDefault();
-  const text = input.value.trim();
-  if (!text) return;
-  const btn = form.querySelector("button");
-  btn.disabled = true;
-  try {
-    const res = await fetch("/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ text })
-    });
-    const data = await res.json();
-    if (!data.success) {
-      console.warn("Erro ao enviar mensagem:", data.error);
-      alert("Erro: " + (data.error || "ver console"));
-    } else {
-      input.value = "";
-      loadMessages();
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text) return;
+    try {
+      const res = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+ credentials: "include",
+        body: JSON.stringify({ text })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        console.warn("Erro ao enviar mensagem:", data.error);
+      } else {
+        input.value = "";
+        loadMessages();
+      }
+    } catch (err) {
+      console.error("Erro no envio:", err);
     }
-  } catch (err) {
-    console.error("Erro no envio:", err);
-    alert("Erro no envio. Veja console do servidor.");
-  } finally {
-    btn.disabled = false;
-  }
-});
-
+  });
 
   setInterval(loadMessages, 5000);
   loadMessages();

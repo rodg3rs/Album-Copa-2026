@@ -15,12 +15,21 @@ const turso = createClient({
 });
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: true,           // ou 'http://localhost:3000' se quiser fixar
+  credentials: true
+}));
+
 app.use(bodyParser.json());
+
 app.use(session({
   secret: "figurinhas2026",
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: true,
+  cookie: {
+    secure: false,        // true apenas em HTTPS
+    sameSite: 'lax'       // ajusta conforme necessidade
+  }
 }));
 
 // Servir arquivos estáticos (HTML, CSS, JS)
@@ -63,41 +72,32 @@ app.post("/cadastro", async (req, res) => {
 
 // Login
 app.post("/login", async (req, res) => {
-    const { nome, senha } = req.body;
-    try {
-        const result = await turso.execute({
-            sql: "SELECT * FROM dManos WHERE Nome = ? AND Senha = ?",
-            args: [nome, senha]
-        });
-
-if (result.rows.length > 0) {
-  const usuario = result.rows[0];
-  req.session.user = usuario; // <<-- ESSENCIAL
-  res.json({ success: true, message: "Login realizado com sucesso!", nome: usuario.Nome, id: usuario.ID });
-} else {
-  res.json({ success: false, error: "Nome ou senha inválidos." });
-}
-
-    } catch (err) {
-        res.json({ success: false, error: "Erro ao realizar login." });
-    }
-});
-
-
-// Chat
-app.post("/chat", async (req, res) => {
-  if (!req.session.user) return res.status(403).json({ error: "Não logado" });
-  const { mensagem } = req.body;
-  const data = new Date();
+  const { nome, senha } = req.body;
   try {
-    await turso.execute(  "INSERT INTO dChat (ID, Mensagem, Data, Hora, Timestamp) VALUES (?, ?, ?, ?, ?)",
-  [req.session.user.ID, mensagem, data.toLocaleDateString(), data.toLocaleTimeString(), Date.now()]
-);
-    res.json({ success: true });
+    // use o nome exato da coluna no banco (provavelmente 'nome' e 'senha')
+    const result = await turso.execute({
+      sql: "SELECT * FROM dManos WHERE nome = ? AND senha = ?",
+      args: [nome, senha]
+    });
+
+    if (result.rows.length > 0) {
+      const usuario = result.rows[0];
+      // padroniza o objeto de sessão para ter ID e Nome (com essas chaves)
+      req.session.user = {
+        ID: usuario.ID ?? usuario.id,
+        Nome: usuario.nome ?? usuario.Nome ?? nome
+      };
+      res.json({ success: true, message: "Login realizado com sucesso!", nome: req.session.user.Nome, id: req.session.user.ID });
+    } else {
+      res.json({ success: false, error: "Nome ou senha inválidos." });
+    }
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    console.error("Erro /login:", err);
+    res.json({ success: false, error: "Erro ao realizar login." });
   }
 });
+
+
 
 // Álbum (A/R)
 // Retorna stamps do usuário por tipo (A ou R)
@@ -288,28 +288,39 @@ app.get("/chat", async (req,res)=>{
   }
 });
 
-// POST nova mensagem
-app.post("/chat", async (req,res)=>{
-  if (!req.session.user) return res.status(403).json({success:false,error:"Não logado"});
+// POST nova mensagem (corrigido — usa Nome e campo text)
+app.post("/chat", async (req, res) => {
+  console.log("POST /chat recebido - session present:", !!req.session.user, "body:", req.body);
+
+  if (!req.session.user) {
+    console.warn("POST /chat bloqueado: sem sessão");
+    return res.status(403).json({ success:false, error: "Não logado" });
+  }
+
   const { text } = req.body;
-  if (!text || !text.trim()) return res.json({success:false,error:"Mensagem vazia"});
-  
+  console.log("POST /chat - user:", req.session.user.Nome, "text type:", typeof text);
+
+  if (!text || !text.trim()) return res.json({ success:false, error: "Mensagem vazia" });
+
   const now = new Date();
-  const timestamp = Math.floor(Date.now()/1000);
+  const timestamp = Math.floor(Date.now() / 1000);
+
   try {
     await turso.execute({
-      sql:"INSERT INTO dChat (Nome, Mensagem, Data, Hora, Timestamp) VALUES (?, ?, ?, ?, ?)",
-      args:[
-        req.session.user.Nome,
-        text.trim(),
-        now.toISOString().split("T")[0], // Data YYYY-MM-DD
-        now.toTimeString().split(" ")[0], // Hora HH:MM:SS
-        timestamp
+      sql: "INSERT INTO dChat (Nome, Mensagem, Data, Hora, Timestamp) VALUES (?, ?, ?, ?, ?)",
+      args: [
+        String(req.session.user.Nome),
+        String(text.trim()),
+        String(now.toISOString().split("T")[0]),
+        String(now.toTimeString().split(" ")[0]),
+        Number(timestamp)
       ]
     });
-    res.json({success:true});
-  } catch(err) {
-    res.status(500).json({success:false,error:err.message});
+    console.log("POST /chat: inserido com sucesso");
+    res.json({ success: true });
+  } catch (err) {
+    console.error("ERRO /chat INSERT:", err);
+    res.status(500).json({ success:false, error: err.message });
   }
 });
 

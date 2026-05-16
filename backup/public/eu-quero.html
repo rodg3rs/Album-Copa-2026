@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Eu Quero - Troca de Figurinhas</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    table.quero {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    table.quero th, table.quero td {
+      border: 1px solid #ccc;
+      text-align: center;
+      padding: 4px;
+    }
+    table.quero th {
+      background: #f0f0f0;
+    }
+    .stamp-cell {
+      width: 40px;
+      height: 30px;
+      cursor: pointer;
+    }
+    .stamp-cell.gray {
+      background: #ccc;
+      color: #333;
+    }
+    .stamp-cell.yellow {
+      background: #ffeb3b;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>Eu Quero</h2>
+
+  <!-- Filtro por usuário -->
+  <label for="user-filter">Filtrar por usuário:</label>
+  <select id="user-filter">
+    <option value="">Todos</option>
+  </select>
+
+  <table class="quero" id="quero-table"></table>
+  <div id="msg"></div>
+
+  <script>
+    const table = document.getElementById("quero-table");
+    const filterSelect = document.getElementById("user-filter");
+
+    // Monta tabela com cruzamento
+    async function buildQuero() {
+      const userFilter = filterSelect.value;
+      const res = await fetch("/quero" + (userFilter ? "?user="+userFilter : ""));
+      const data = await res.json();
+      if (!data.success) {
+        document.getElementById("msg").textContent = data.error;
+        return;
+      }
+
+      // Preenche filtro de usuários
+      filterSelect.innerHTML = '<option value="">Todos</option>';
+      data.users.forEach(u=>{
+        const opt = document.createElement("option");
+        opt.value = u;
+        opt.textContent = u;
+        if (u === userFilter) opt.selected = true;
+        filterSelect.appendChild(opt);
+      });
+
+      // Cabeçalho
+      let header = "<tr><th>Usuário</th><th>Seleção</th>";
+      for (let i=1;i<=20;i++) header += `<th>${i}</th>`;
+      header += "</tr>";
+      table.innerHTML = header;
+
+      // Linhas por usuário
+      data.result.forEach(row=>{
+        let tr = `<tr><td>${row.user}</td><td>${row.team}</td>`;
+        for (let i=1;i<=20;i++) {
+          const code = `${row.team}${i}`;
+          const has = row.stamps.includes(code);
+          tr += `<td class="stamp-cell ${has ? 'yellow' : 'gray'}">${i}</td>`;
+        }
+        tr += "</tr>";
+        table.innerHTML += tr;
+      });
+    }
+
+    filterSelect.addEventListener("change", buildQuero);
+    buildQuero();
+  </script>
+</body>
+</html>
