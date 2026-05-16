@@ -61,40 +61,58 @@
     </form>
   </div>
 
-  <script>
-    const messagesDiv = document.getElementById("chat-messages");
-    const form = document.getElementById("chat-form");
-    const input = document.getElementById("chat-text");
+<script>
+  const messagesDiv = document.getElementById("chat-messages");
+  const form = document.getElementById("chat-form");
+  const input = document.getElementById("chat-text");
 
-    async function loadMessages() {
+  async function loadMessages() {
+    try {
       const res = await fetch("/chat");
       const data = await res.json();
-      if (!data.success) return;
-data.messages.forEach(m=>{
-  const div = document.createElement("div");
-  div.className = "chat-message " + (m.user===data.currentUser ? "user":"other");
-  div.textContent = `${m.user}: ${m.text}`;
-  messagesDiv.appendChild(div);
-});
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
-
-    form.addEventListener("submit", async e=>{
-      e.preventDefault();
-      const text = input.value.trim();
-      if (!text) return;
-      await fetch("/chat", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({ text })
+      if (!data.success) {
+        console.warn("Não foi possível carregar chat:", data.error);
+        return;
+      }
+      // limpa antes de renderizar
+      messagesDiv.innerHTML = "";
+      data.messages.forEach(m => {
+        const div = document.createElement("div");
+        div.className = "chat-message " + (m.user === data.currentUser ? "user" : "other");
+        div.textContent = `${m.user}: ${m.text}`;
+        messagesDiv.appendChild(div);
       });
-      input.value="";
-      loadMessages();
-    });
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    } catch (err) {
+      console.error("Erro ao carregar mensagens:", err);
+    }
+  }
 
-    // Atualiza a cada 5 segundos
-    setInterval(loadMessages, 5000);
-    loadMessages();
-  </script>
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text) return;
+    try {
+      const res = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        console.warn("Erro ao enviar mensagem:", data.error);
+      } else {
+        input.value = "";
+        loadMessages();
+      }
+    } catch (err) {
+      console.error("Erro no envio:", err);
+    }
+  });
+
+  setInterval(loadMessages, 5000);
+  loadMessages();
+</script>
+
 </body>
 </html>
