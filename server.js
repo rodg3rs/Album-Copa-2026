@@ -180,6 +180,45 @@ app.post("/troca", async (req, res) => {
   }
 });
 
+app.get("/quero", async (req,res)=>{
+  if (!req.session.user) return res.status(403).json({success:false,error:"Não logado"});
+  const filtroUser = req.query.user || null;
+  const userId = parseInt(req.session.user.ID);
+
+  try {
+    // Figurinhas que faltam no álbum do usuário
+    const faltantesRes = await turso.execute({
+      sql:"SELECT Stamp FROM dControle WHERE ID=? AND Tipo='A'",
+      args:[userId]
+    });
+    const faltantes = new Set(/* todas as figurinhas possíveis */);
+    faltantesRes.rows.forEach(r=>faltantes.delete(r.Stamp));
+
+    // Repetidas dos outros usuários
+    let sql = "SELECT dManos.Nome, dControle.Stamp FROM dControle JOIN dManos ON dControle.ID=dManos.ID WHERE dControle.Tipo='R' AND dControle.ID<>?";
+    let args = [userId];
+    if (filtroUser) { sql += " AND dManos.Nome=?"; args.push(filtroUser); }
+    const repRes = await turso.execute({sql,args});
+
+    // Cruzamento
+    const result = [];
+    const users = new Set();
+    repRes.rows.forEach(r=>{
+      if (faltantes.has(r.Stamp)) {
+        const team = r.Stamp.replace(/[0-9]+$/,"");
+        let row = result.find(x=>x.user===r.Nome && x.team===team);
+        if (!row) { row={user:r.Nome,team,stamps:[]}; result.push(row); }
+        row.stamps.push(r.Stamp);
+        users.add(r.Nome);
+      }
+    });
+
+    res.json({success:true,users:[...users],result});
+  } catch(err) {
+    res.status(500).json({success:false,error:err.message});
+  }
+});
+
 // Logout
 app.get("/logout", (req, res) => {
   req.session.destroy();
