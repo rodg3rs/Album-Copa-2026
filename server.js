@@ -186,13 +186,24 @@ app.get("/quero", async (req,res)=>{
   const userId = parseInt(req.session.user.ID);
 
   try {
-    // Figurinhas que faltam no álbum do usuário
-    const faltantesRes = await turso.execute({
+    // Lista completa de figurinhas
+    const teams = ["BRA","RSA","GER","FRA","ESP","ENG","POR","MEX","USA","CAN","JPN","KOR","NED","BEL","CRO","URU","COL","SEN","MAR","GHA","IRN","AUS","QAT","KSA","CMR","POL","SRB","TUN","ECU","SUI"];
+    const allStamps = [];
+    for (let team of teams) {
+      for (let i=1;i<=20;i++) {
+        allStamps.push(`${team}${i}`);
+      }
+    }
+
+    // Figurinhas que o usuário já tem no álbum
+    const albumRes = await turso.execute({
       sql:"SELECT Stamp FROM dControle WHERE ID=? AND Tipo='A'",
       args:[userId]
     });
-    const faltantes = new Set(/* todas as figurinhas possíveis */);
-    faltantesRes.rows.forEach(r=>faltantes.delete(r.Stamp));
+    const albumSet = new Set(albumRes.rows.map(r=>r.Stamp));
+
+    // Faltantes = todas menos as que já tem
+    const faltantes = new Set(allStamps.filter(s=>!albumSet.has(s)));
 
     // Repetidas dos outros usuários
     let sql = "SELECT dManos.Nome, dControle.Stamp FROM dControle JOIN dManos ON dControle.ID=dManos.ID WHERE dControle.Tipo='R' AND dControle.ID<>?";
@@ -218,6 +229,45 @@ app.get("/quero", async (req,res)=>{
     res.status(500).json({success:false,error:err.message});
   }
 });
+
+app.get("/troco", async (req,res)=>{
+  if (!req.session.user) return res.status(403).json({success:false,error:"Não logado"});
+  const filtroUser = req.query.user || null;
+  const userId = parseInt(req.session.user.ID);
+
+  try {
+    // Suas repetidas
+    const repRes = await turso.execute({
+      sql:"SELECT Stamp FROM dControle WHERE ID=? AND Tipo='R'",
+      args:[userId]
+    });
+    const minhasRepetidas = new Set(repRes.rows.map(r=>r.Stamp));
+
+    // Faltantes dos outros usuários
+    let sql = "SELECT dManos.Nome, dControle.Stamp FROM dControle JOIN dManos ON dControle.ID=dManos.ID WHERE dControle.Tipo='A' AND dControle.ID<>?";
+    let args = [userId];
+    if (filtroUser) { sql += " AND dManos.Nome=?"; args.push(filtroUser); }
+    const faltRes = await turso.execute({sql,args});
+
+    // Cruzamento
+    const result = [];
+    const users = new Set();
+    faltRes.rows.forEach(r=>{
+      if (minhasRepetidas.has(r.Stamp)) {
+        const team = r.Stamp.replace(/[0-9]+$/,"");
+        let row = result.find(x=>x.user===r.Nome && x.team===team);
+        if (!row) { row={user:r.Nome,team,stamps:[]}; result.push(row); }
+        row.stamps.push(r.Stamp);
+        users.add(r.Nome);
+      }
+    });
+
+    res.json({success:true,users:[...users],result});
+  } catch(err) {
+    res.status(500).json({success:false,error:err.message});
+  }
+});
+
 
 // Logout
 app.get("/logout", (req, res) => {
