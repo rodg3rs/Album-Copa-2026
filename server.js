@@ -268,18 +268,17 @@ app.get("/troco", async (req,res)=>{
   }
 });
 
-// GET mensagens do chat (últimas 24h)
+// GET mensagens (últimas 24h)
 app.get("/chat", async (req,res)=>{
   if (!req.session.user) return res.status(403).json({success:false,error:"Não logado"});
-  const now = Math.floor(Date.now()/1000);
-  const cutoff = now - 24*3600; // 24h atrás
+  const cutoff = Math.floor(Date.now()/1000) - 24*3600;
   try {
     const result = await turso.execute({
-      sql:"SELECT dManos.Nome AS User, Mensagem, Timestamp FROM dChat JOIN dManos ON dChat.ID=dManos.ID WHERE Timestamp>=? ORDER BY Timestamp ASC",
+      sql:"SELECT Nome, Mensagem, Timestamp FROM dChat WHERE Timestamp>=? ORDER BY Timestamp ASC",
       args:[cutoff]
     });
     const messages = result.rows.map(r=>({
-      user:r.User,
+      user:r.Nome,
       text:r.Mensagem,
       timestamp:r.Timestamp
     }));
@@ -292,27 +291,27 @@ app.get("/chat", async (req,res)=>{
 // POST nova mensagem
 app.post("/chat", async (req,res)=>{
   if (!req.session.user) return res.status(403).json({success:false,error:"Não logado"});
-  const { text } = req.body;
+  const { text } = req.bod  if (!text || !text.trim()) return res.json({success:false,error:"Mensagem vazia"});
   const now = new Date();
   const timestamp = Math.floor(Date.now()/1000);
   try {
-    await turso.execute({
-      sql:"INSERT INTO dChat (ID, Mensagem, Data, Hora, Timestamp) VALUES (?, ?, ?, ?, ?)",
-      args:[
-        parseInt(req.session.user.ID),
-        text,
-        now.toISOString().split("T")[0],
-        now.toTimeString().split(" ")[0],
-        timestamp
-      ]
-    });
+await turso.execute({
+  sql:"INSERT INTO dChat (Nome, Mensagem, Data, Hora, Timestamp) VALUES (?, ?, ?, ?, ?)",
+  args:[
+    req.session.user.Nome,   // salva o nome direto
+    text.trim(),
+    now.toISOString().split("T")[0], // Data YYYY-MM-DD
+    now.toTimeString().split(" ")[0], // Hora HH:MM:SS
+    Math.floor(Date.now()/1000)       // Timestamp em segundos
+  ]
+});
     res.json({success:true});
   } catch(err) {
     res.status(500).json({success:false,error:err.message});
   }
 });
 
-
+	
 // Logout
 app.get("/logout", (req, res) => {
   req.session.destroy();

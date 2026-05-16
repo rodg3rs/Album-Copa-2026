@@ -70,13 +70,12 @@
       const res = await fetch("/chat");
       const data = await res.json();
       if (!data.success) return;
-      messagesDiv.innerHTML = "";
-      data.messages.forEach(m=>{
-        const div = document.createElement("div");
-        div.className = "chat-message " + (m.user===data.currentUser ? "user":"other");
-        div.textContent = `${m.user}: ${m.text}`;
-        messagesDiv.appendChild(div);
-      });
+data.messages.forEach(m=>{
+  const div = document.createElement("div");
+  div.className = "chat-message " + (m.user===data.currentUser ? "user":"other");
+  div.textContent = `${m.user}: ${m.text}`;
+  messagesDiv.appendChild(div);
+});
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 
