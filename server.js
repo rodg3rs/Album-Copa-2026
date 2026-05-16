@@ -291,25 +291,28 @@ app.get("/chat", async (req,res)=>{
 // POST nova mensagem
 app.post("/chat", async (req,res)=>{
   if (!req.session.user) return res.status(403).json({success:false,error:"Não logado"});
-  const { text } = req.bod  if (!text || !text.trim()) return res.json({success:false,error:"Mensagem vazia"});
+  const { text } = req.body;
+  if (!text || !text.trim()) return res.json({success:false,error:"Mensagem vazia"});
+  
   const now = new Date();
   const timestamp = Math.floor(Date.now()/1000);
   try {
-await turso.execute({
-  sql:"INSERT INTO dChat (Nome, Mensagem, Data, Hora, Timestamp) VALUES (?, ?, ?, ?, ?)",
-  args:[
-    req.session.user.Nome,   // salva o nome direto
-    text.trim(),
-    now.toISOString().split("T")[0], // Data YYYY-MM-DD
-    now.toTimeString().split(" ")[0], // Hora HH:MM:SS
-    Math.floor(Date.now()/1000)       // Timestamp em segundos
-  ]
-});
+    await turso.execute({
+      sql:"INSERT INTO dChat (Nome, Mensagem, Data, Hora, Timestamp) VALUES (?, ?, ?, ?, ?)",
+      args:[
+        req.session.user.Nome,
+        text.trim(),
+        now.toISOString().split("T")[0], // Data YYYY-MM-DD
+        now.toTimeString().split(" ")[0], // Hora HH:MM:SS
+        timestamp
+      ]
+    });
     res.json({success:true});
   } catch(err) {
     res.status(500).json({success:false,error:err.message});
   }
 });
+
 
 	
 // Logout
