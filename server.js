@@ -325,11 +325,11 @@ app.post("/chat", async (req, res) => {
 });
 
 
-	
-// Logout
+// Logout simples
 app.get("/logout", (req, res) => {
-  req.session.destroy();
-  res.json({ success: true, message: "Logout realizado" });
+  req.session.destroy(() => {
+    res.json({ success: true });
+  });
 });
 
 // ---------------- INICIALIZAÇÃO ----------------

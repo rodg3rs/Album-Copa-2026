@@ -8,6 +8,15 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 </head>
+
+  <script>
+    document.getElementById("menu-sair").addEventListener("click", async (e) => {
+      e.preventDefault();
+      await fetch("/logout", { credentials: "include" });
+      window.location.href = "login.html";
+    });
+  </script>
+
 <body>
 
 <!-- Container Superior -->
@@ -68,10 +77,10 @@
         </a>
       </li>
       <li>
-        <a href="sair.html" target="content-frame">
-          <i class="fa-solid fa-right-from-bracket"></i>
-          <span>Sair</span>
-        </a>
+	<a href="#" id="menu-sair">
+	  <i class="fa-solid fa-right-from-bracket"></i>
+	  <span>Sair</span>
+	</a>
       </li>
     </ul>
   </nav>
