@@ -5,7 +5,6 @@ const bodyParser = require("body-parser");
 const session = require("express-session");
 const nodemailer = require("nodemailer");
 const cors = require("cors");
-const path = require("path");
 
 // Conexão com Turso (SQLite remoto)
 const { createClient } = require("@libsql/client");
