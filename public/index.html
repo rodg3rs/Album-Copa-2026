@@ -79,37 +79,7 @@
 </footer>
 
 <script>
-  // Função para atualizar menu conforme login
-  function updateMenu(loggedIn) {
-    // Sempre habilitado
-    document.getElementById("menu-sair").style.display = "inline";
 
-    if (loggedIn) {
-      // Esconde login/cadastrar
-      document.getElementById("menu-login").style.display = "none";
-      document.getElementById("menu-cadastrar").style.display = "none";
-
-      // Mostra opções logado
-      document.getElementById("menu-album").style.display = "inline";
-      document.getElementById("menu-repetidas").style.display = "inline";
-      document.getElementById("menu-quero").style.display = "inline";
-      document.getElementById("menu-troco").style.display = "inline";
-      document.getElementById("menu-chat").style.display = "inline";
-    } else {
-      // Mostra login/cadastrar
-      document.getElementById("menu-login").style.display = "inline";
-      document.getElementById("menu-cadastrar").style.display = "inline";
-
-      // Esconde opções logado
-      document.getElementById("menu-album").style.display = "none";
-      document.getElementById("menu-repetidas").style.display = "none";
-      document.getElementById("menu-quero").style.display = "none";
-      document.getElementById("menu-troco").style.display = "none";
-      document.getElementById("menu-chat").style.display = "none";
-    }
-  }
-
-  // Logout simples
   document.getElementById("menu-sair").addEventListener("click", async (e) => {
     e.preventDefault();
     await fetch("/logout", { credentials: "include" });
@@ -117,18 +87,6 @@
     window.location.href = "index.html";
   });
 
-  // Exemplo: ao carregar a página, verificar sessão
-  async function checkSession() {
-    try {
-      const res = await fetch("/session", { credentials: "include" });
-      const data = await res.json();
-      updateMenu(data.loggedIn);
-    } catch {
-      updateMenu(false);
-    }
-  }
-
-  checkSession();
 </script>
 
 
