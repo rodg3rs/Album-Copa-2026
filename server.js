@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const session = require("express-session");
 const nodemailer = require("nodemailer");
 const cors = require("cors");
+const path = require("path");
 
 // Conexão com Turso (SQLite remoto)
 const { createClient } = require("@libsql/client");
@@ -35,7 +36,6 @@ app.use(session({
 app.use(express.static(path.join(__dirname, "public")));
 
 // Rota raiz para teste
-const path = require("path");
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
