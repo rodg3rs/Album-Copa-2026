@@ -36,8 +36,9 @@ app.use(session({
 app.use(express.static(path.join(__dirname, "public")));
 
 // Rota raiz para teste
+const path = require("path");
 app.get("/", (req, res) => {
-  res.send("Servidor do Troca de Figurinhas está rodando!");
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 // Configuração de envio de e-mail
