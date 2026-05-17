@@ -79,14 +79,11 @@
 </footer>
 
 <script>
-
   document.getElementById("menu-sair").addEventListener("click", async (e) => {
     e.preventDefault();
     await fetch("/logout", { credentials: "include" });
-    updateMenu(false); // volta para estado não logado
     window.location.href = "index.html";
   });
-
 </script>
 
 </body>
