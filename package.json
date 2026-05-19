@@ -19,6 +19,7 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+<<<<<<< HEAD
     "express-session": "^1.19.0",
     "jsonwebtoken": "^9.0.3",
     "nodemailer": "^8.0.7"
@@ -31,4 +32,9 @@
     "url": "https://github.com/rodg3rs/Album-Copa2026/issues"
   },
   "homepage": "https://github.com/rodg3rs/Album-Copa2026#readme"
+=======
+    "jsonwebtoken": "^9.0.3",
+    "nodemailer": "^8.0.7"
+  }
+>>>>>>> a7b8b05 (WIP: preparar forçar atualização do main)
 }
