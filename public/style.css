@@ -60,6 +60,19 @@ body::before {
   text-decoration: underline;
 }
 
+#main-title {
+  font-size: 22px;       /* diminui o tamanho do título */
+  font-weight: bold;
+  margin: 0;
+}
+
+#main-title .subtitle {
+  font-size: 10px;       /* bem pequeno */
+  font-style: italic;    /* em itálico */
+  color: #ddd;           /* discreto */
+  margin-left: 6px;      /* pequeno espaço do título */
+}
+
 
 /* Container central ocupa espaço entre header e footer */
 #main-container {
