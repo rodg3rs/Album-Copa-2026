@@ -163,7 +163,7 @@ body::before {
 .album td:first-child {
   position: sticky;
   left: 0;
-  background: #e0e0e0; /* cinza mais forte para destacar a palavra Seleção */
+  background: #fff;   /* fundo branco para não sobrepor */
   z-index: 3;         /* acima das células normais */
 }
 
@@ -175,6 +175,10 @@ body::before {
   z-index: 4;          /* acima das células normais */
 }
 
-
+/* Travar célula de canto (Seleção no cabeçalho) */
+.album tr:first-child th:first-child {
+  z-index: 5;          /* precisa estar acima de tudo */
+  background: #e0e0e0; /* destaque para a palavra Seleção */
+}
 
 #user
