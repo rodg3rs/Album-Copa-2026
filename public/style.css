@@ -92,7 +92,7 @@ body::before {
   justify-content: center;
   align-items: center;
   gap: 30px;
-  list-style: none;   /* remove os pontos */
+  list-style: none;
   margin: 0;
   padding: 0;
 }
@@ -104,6 +104,21 @@ body::before {
   color: white;
   text-decoration: none;
   font-size: 12px;
+}
+
+/* Ajuste para telas pequenas (celular) */
+@media (max-width: 600px) {
+  #bottom-container nav ul {
+    gap: 12px;   /* diminui o espaço entre ícones */
+  }
+
+  #bottom-container nav ul li a i {
+    font-size: 18px; /* ícones um pouco menores */
+  }
+
+  #bottom-container nav ul li a span {
+    font-size: 11px; /* texto mais compacto */
+  }
 }
 
 #bottom-container nav ul li a i {
