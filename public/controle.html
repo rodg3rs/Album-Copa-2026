@@ -185,7 +185,7 @@ function updateVisual(cell, checked) {
         body:JSON.stringify({ tipo, stamps: checked })
       });
       const data = await res.json();
-      document.getElementById("msg").textContent = data.success ? "Atualizado!" : data.error;
+	alert(data.success ? "Salvando...\n\nAtualizado!" : data.error);
     });
 
     function voltar() {
