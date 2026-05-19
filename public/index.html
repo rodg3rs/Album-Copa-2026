@@ -13,23 +13,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Copa 2026 - Trocas</title>
     <style>
-        :root { --primary: #8A1538; --bg: #f4f4f4; }
-        body { margin: 0; font-family: sans-serif; background: var(--bg); display: flex; flex-direction: column; height: 100vh; }
+        :root { --primary: #8A1538; --secondary: #5d1029; --bg: #f8f9fa; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
         /* Containers Fixos */
-        header { position: fixed; top: 0; width: 100%; height: 60px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; box-sizing: border-box; z-index: 10; }
-        footer { position: fixed; bottom: 0; width: 100%; height: 65px; background: white; border-top: 1px solid #ddd; display: flex; justify-content: space-around; align-items: center; z-index: 10; }
+        header { position: fixed; top: 0; width: 100%; height: 60px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-sizing: border-box; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        footer { position: fixed; bottom: 0; width: 100%; height: 70px; background: white; border-top: 1px solid #ddd; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
         
         /* Centro Livre */
-        main { flex: 1; margin: 60px 0 65px 0; overflow-y: auto; padding: 15px; }
+        main { flex: 1; margin: 60px 0 70px 0; overflow-y: auto; padding: 20px; box-sizing: border-box; }
 
-        .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
-        button { background: var(--primary); color: white; border: none; font-weight: bold; }
-        .nav-btn { background: none; color: #555; font-size: 11px; width: auto; }
-        .sticker-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
-        .sticker { border: 1px solid #ddd; text-align: center; padding: 5px; font-size: 12px; border-radius: 4px; }
-        .owned { background: #d4edda; border-color: #28a745; }
+        .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #eee; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 14px; margin: 10px 0; border-radius: 8px; border: none; background: var(--primary); color: white; font-weight: bold; cursor: pointer; font-size: 16px; }
+        button:active { background: var(--secondary); }
+        
+        .nav-item { background: none; color: #666; border: none; padding: 5px; font-size: 11px; display: flex; flex-direction: column; align-items: center; width: 60px; }
+        .nav-item span { font-size: 24px; margin-bottom: 3px; }
+        .active { color: var(--primary); font-weight: bold; }
+
+        .hidden { display: none; }
+/* Estilo da Grade de Figurinhas */
+.sticker-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* 5 colunas para telemóvel */
+    gap: 8px;
+    padding: 10px 0;
+}
+
+.sticker {
+    aspect-ratio: 1 / 1.3; /* Proporção de figurinha real */
+    background: #fff;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    color: #999;
+    transition: all 0.2s;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Cor quando marcada no Álbum */
+.sticker.owned {
+    background: #28a745;
+    color: white;
+    border-color: #1e7e34;
+}
+
+/* Cor quando marcada como Repetida */
+.sticker.repeated {
+    background: #ffc107;
+    color: #212529;
+    border-color: #d39e00;
+}
+
     </style>
 >>>>>>> 8eab7a1 (WIP: preparar forçar atualização do main)
 </head>
@@ -116,64 +157,179 @@
 </html>
 =======
     <header>
-        <strong>Copa 2026</strong>
-        <span id="userDisplay">Visitante</span>
+        <strong id="app-status">Copa 2026</strong>
+        <small id="userName">Visitante</small>
     </header>
 
-    <main id="app">
+    <main id="content">
         </main>
 
-    <footer>
-        <button class="nav-btn" onclick="renderView('chat')">💬<br>Chat</button>
-        <button class="nav-btn" onclick="renderView('album')">📖<br>Álbum</button>
-        <button class="nav-btn" onclick="renderView('repetidas')">🔄<br>Repetidas</button>
-        <button class="nav-btn" onclick="renderView('trocas')">🤝<br>Trocas</button>
-        <button class="nav-btn" onclick="logout()">🚪<br>Sair</button>
-    </footer>
+    <footer id="main-nav">
+        </footer>
 
     <script>
-        let currentUser = JSON.parse(localStorage.getItem('user')) || null;
-        const API = "http://localhost:3000/api";
+        const API_URL = "http://localhost:3000/api";
+        let user = JSON.parse(localStorage.getItem('user')) || null;
 
-        function renderView(view) {
-            const app = document.getElementById('app');
-            if (!currentUser && view !== 'register') return renderLogin();
+        // --- FUNÇÕES DE NAVEGAÇÃO ---
+        function updateUI() {
+            const nav = document.getElementById('main-nav');
+            const userDisp = document.getElementById('userName');
 
-            switch(view) {
-                case 'chat':
-                    app.innerHTML = `<h3>Chat da Galera</h3>
-                    <div id="chatBox" style="height:300px; overflow-y:auto; border:1px solid #ddd; margin-bottom:10px; padding:10px;"></div>
-                    <input id="chatMsg" placeholder="Mensagem..."><button onclick="sendChat()">Enviar</button>`;
-                    loadChat();
-                    break;
-                case 'album':
-                    app.innerHTML = `<h3>Meu Álbum (Marque o que já tem)</h3><div class="sticker-grid" id="grid"></div>`;
-                    renderGrid('A');
-                    break;
-                case 'repetidas':
-                    app.innerHTML = `<h3>Minhas Repetidas</h3><div class="sticker-grid" id="grid"></div>`;
-                    renderGrid('R');
-                    break;
-                case 'trocas':
-                    app.innerHTML = `<h3>Quem tem o que eu preciso?</h3><div id="matchList">Carregando...</div>`;
-                    loadMatches();
-                    break;
+            if (!user) {
+                userDisp.innerText = "Visitante";
+                nav.innerHTML = `
+                    <button class="nav-item" onclick="showLogin()"><span>🔑</span>Login</button>
+                    <button class="nav-item" onclick="showRegister()"><span>📝</span>Cadastrar</button>
+                `;
+                showLogin();
+            } else {
+                userDisp.innerText = user.nome;
+                nav.innerHTML = `
+                    <button class="nav-item" onclick="showChat()"><span>💬</span>Chat</button>
+                    <button class="nav-item" onclick="showAlbum()"><span>📖</span>Álbum</button>
+                    <button class="nav-item" onclick="showMatch()"><span>🤝</span>Trocas</button>
+                    <button class="nav-item" onclick="logout()"><span>🚪</span>Sair</button>
+                `;
+                showChat();
             }
         }
 
-        async function loadMatches() {
-            const res = await fetch(`${API}/match/want`, { headers: {'Authorization': `Bearer ${currentUser.token}`} });
-            const data = await res.json();
-            document.getElementById('matchList').innerHTML = data.map(m => `
+        // --- TELAS (VIEWS) ---
+        function showLogin() {
+            document.getElementById('content').innerHTML = `
                 <div class="card">
-                    <b>${m.Nome}</b> tem a figurinha <b>#${m.Stamp}</b><br>
-                    <button onclick="solicitarTroca('${m.eMail}', ${m.Stamp})">Tenho Interesse</button>
+                    <h2>Entrar</h2>
+                    <input type="number" id="l-id" placeholder="ID (ex: 100)">
+                    <input type="password" id="l-pass" placeholder="Senha (6 dígitos)">
+                    <button onclick="handleLogin()">Acessar Sistema</button>
                 </div>
-            `).join('') || "Nenhuma figurinha disponível no momento.";
+            `;
+        }
+
+        function showRegister() {
+            document.getElementById('content').innerHTML = `
+                <div class="card">
+                    <h2>Novo Cadastro</h2>
+                    <input type="text" id="r-nome" placeholder="Nome Completo">
+                    <input type="email" id="r-email" placeholder="E-mail (@)">
+                    <input type="password" id="r-pass" maxlength="6" placeholder="Senha (6 caracteres)">
+                    <button onclick="handleRegister()">Criar Conta</button>
+                </div>
+            `;
+        }
+
+        // --- LÓGICA DE BACKEND (FETCH) ---
+        async function handleRegister() {
+            const nome = document.getElementById('r-nome').value;
+            const email = document.getElementById('r-email').value;
+            const senha = document.getElementById('r-pass').value;
+
+            const res = await fetch(`${API_URL}/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome, email, senha })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                alert(`Sucesso! Seu ID é: ${data.id}. Use-o para logar.`);
+                showLogin();
+            } else {
+                alert("Erro: " + data.error);
+            }
+        }
+
+        async function handleLogin() {
+            const id = document.getElementById('l-id').value;
+            const senha = document.getElementById('l-pass').value;
+
+            const res = await fetch(`${API_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, senha })
+            });
+            const data = await res.json();
+
+            if (data.token) {
+                user = { id, nome: data.nome, token: data.token };
+                localStorage.setItem('user', JSON.stringify(user));
+                updateUI();
+            } else {
+                alert("Dados inválidos!");
+            }
         }
 
         function logout() {
             localStorage.clear();
+<<<<<<< HEAD
             document.body.innerHTML = `<div style="text-align:center; margin-top:50px;">
                 <img src="
 >>>>>>> 8eab7a1 (WIP: preparar forçar atualização do main)
+=======
+            user = null;
+            document.getElementById('content').innerHTML = `
+                <div style="text-align:center; padding-top:40px;">
+                    <img src="https://via.placeholder.com/200x280?text=Copa+2026" style="border-radius:10px; margin-bottom:20px;">
+                    <h3>Até logo!</h3>
+                    <button onclick="location.reload()">Voltar ao Início</button>
+                </div>
+            `;
+            setTimeout(() => updateUI(), 2000);
+        }
+
+// Função para gerar as 200 figurinhas na tela
+async function renderGrid(tipo) {
+    const app = document.getElementById('content');
+    const titulo = tipo === 'A' ? "Meu Álbum (Possuídas)" : "Minhas Repetidas";
+    
+    app.innerHTML = `<h3>${titulo}</h3><div class="sticker-grid" id="grid"></div>`;
+    const grid = document.getElementById('grid');
+
+    // 1. Procurar no banco quais este utilizador já marcou
+    const res = await fetch(`${API_URL}/my-stickers?tipo=${tipo}`, {
+        headers: { 'Authorization': `Bearer ${user.token}` }
+    });
+    const marcadas = await res.json(); // Retorna lista de números, ex: [1, 5, 22]
+
+    // 2. Criar os 200 quadrados
+    for (let i = 1; i <= 200; i++) {
+        const div = document.createElement('div');
+        div.className = 'sticker';
+        if (marcadas.includes(i)) {
+            div.classList.add(tipo === 'A' ? 'owned' : 'repeated');
+        }
+        div.innerText = i;
+        
+        // Evento de clique para marcar/desmarcar
+        div.onclick = () => toggleSticker(i, tipo, div);
+        grid.appendChild(div);
+    }
+}
+
+async function toggleSticker(num, tipo, elemento) {
+    const cssClass = tipo === 'A' ? 'owned' : 'repeated';
+    const acao = elemento.classList.contains(cssClass) ? 'remove' : 'add';
+
+    // Enviar para o server.js
+    const res = await fetch(`${API_URL}/stickers`, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user.token}`
+        },
+        body: JSON.stringify({ stamp: num, tipo: tipo, acao: acao })
+    });
+
+    if (res.ok) {
+        elemento.classList.toggle(cssClass);
+    }
+}
+
+
+        // Início
+        updateUI();
+    </script>
+</body>
+</html>
+>>>>>>> 7698f4d (WIP: preparar forçar atualização do main)

@@ -458,4 +458,19 @@ app.get('/api/match/want', verifyToken, async (req, res) => {
     res.json(result.rows);
 });
 
+app.get('/api/my-stickers', verifyToken, async (req, res) => {
+    const { tipo } = req.query; // 'A' ou 'R'
+    try {
+        const result = await db.execute({
+            sql: "SELECT Stamp FROM dControle WHERE ID = ? AND Tipo = ?",
+            args: [req.user.id, tipo]
+        });
+        // Transforma o array de objetos em array de números simples
+        const lista = result.rows.map(row => row.Stamp);
+        res.json(lista);
+    } catch (e) {
+        res.status(500).send(e.message);
+    }
+});
+
 app.listen(process.env.PORT || 3000, () => console.log("Servidor Online"));
