@@ -53,34 +53,67 @@
   </form>
   <div id="msg"></div>
 
-  <script>
-    // Seleções exemplo (adicione todas as 48)
-    const teams = ["MEX","RSA","KOR"];
-    const params = new URLSearchParams(window.location.search);
-    const view = params.get("view") || "album";
-    const tipo = view === "repetidas" ? "R" : "A";
-    document.getElementById("title").textContent = view === "repetidas" ? "Minhas Repetidas" : "Meu Álbum";
+<script>
+  // Lista completa das 48 seleções
+  const teams = [
+    "BRA","MEX","GER","FRA","ESP","ENG","POR","USA","CAN","JPN","KOR","NED","BEL","CRO","URU","COL",
+    "SEN","MAR","GHA","IRN","AUS","QAT","KSA","CMR","POL","SRB","TUN","ECU","SUI","ARG","CHI","PER",
+    "BOL","PAR","VEN","NOR","SWE","DEN","ITA","CZE","GRE","TUR","EGY","ALG","NGA","ZAF","NZL","RUS"
+  ];
 
-    const table = document.getElementById("album-table");
+  const params = new URLSearchParams(window.location.search);
+  const view = params.get("view") || "album";
+  const tipo = view === "repetidas" ? "R" : "A";
+  document.getElementById("title").textContent = view === "repetidas" ? "Minhas Repetidas" : "Meu Álbum";
 
-    // Monta tabela
-    function buildTable() {
-      // Cabeçalho 1..20
-      let header = "<tr><th>Seleção</th>";
-      for (let i=1;i<=20;i++) header += `<th>${i}</th>`;
-      header += "</tr>";
-      table.innerHTML = header;
+  const table = document.getElementById("album-table");
 
-      for (let team of teams) {
-        let row = `<tr><th>${team}</th>`;
-        for (let i=1;i<=20;i++) {
-          const code = `${team}${i}`;
-          row += `<td class="stamp-cell" data-stamp="${code}">${i}</td>`;
-        }
-        row += "</tr>";
-        table.innerHTML += row;
+  // Monta tabela completa
+  function buildTable() {
+let header = "<tr><th>Seleção</th>";
+for (let i=1;i<=20;i++) header += `<th>${i}</th>`;
+header += "</tr>";
+table.innerHTML = header;
+
+
+    // Seleções
+    for (let team of teams) {
+      let row = `<tr><th>${team}</th>`;
+      for (let i=1;i<=20;i++) {
+        const code = `${team}${i}`;
+        row += `<td class="stamp-cell" data-stamp="${code}">${i}</td>`;
       }
+      row += "</tr>";
+      table.innerHTML += row;
     }
+
+    // FWC iniciais (00–8)
+    let rowFWC = `<tr><th>FWC 00–8</th>`;
+    for (let i=0;i<=8;i++) {
+      const code = `FWC${i}`;
+      rowFWC += `<td class="stamp-cell" data-stamp="${code}">${i}</td>`;
+    }
+    rowFWC += "</tr>";
+    table.innerHTML += rowFWC;
+
+    // FWC adicionais (9–19)
+    let rowFWC2 = `<tr><th>FWC 9–19</th>`;
+    for (let i=9;i<=19;i++) {
+      const code = `FWC${i}`;
+      rowFWC2 += `<td class="stamp-cell" data-stamp="${code}">${i}</td>`;
+    }
+    rowFWC2 += "</tr>";
+    table.innerHTML += rowFWC2;
+
+    // Coca-Cola (CC1–CC14)
+    let rowCC = `<tr><th>Coca-Cola</th>`;
+    for (let i=1;i<=14;i++) {
+      const code = `CC${i}`;
+      rowCC += `<td class="stamp-cell" data-stamp="${code}">${i}</td>`;
+    }
+    rowCC += "</tr>";
+    table.innerHTML += rowCC;
+  }
 
     // Atualiza visual conforme regra
 function updateVisual(cell, checked) {
@@ -106,8 +139,6 @@ function updateVisual(cell, checked) {
     }
   }
 }
-
-
 
     // Carrega existentes
     async function loadExisting() {

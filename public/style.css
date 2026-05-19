@@ -158,4 +158,23 @@ body::before {
   background: #004d00;
 }
 
+/* Travar a primeira coluna (inclui Seleção e códigos das seleções) */
+.album th:first-child,
+.album td:first-child {
+  position: sticky;
+  left: 0;
+  background: #e0e0e0; /* cinza mais forte para destacar a palavra Seleção */
+  z-index: 3;         /* acima das células normais */
+}
+
+/* Travar a primeira linha (cabeçalho inteiro) */
+.album tr:first-child th {
+  position: sticky;
+  top: 0;
+  background: #f0f0f0; /* mantém fundo cinza claro */
+  z-index: 4;          /* acima das células normais */
+}
+
+
+
 #user
