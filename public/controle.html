@@ -122,13 +122,15 @@ table.innerHTML = header;
     // Atualiza visual conforme regra
 function updateVisual(cell, checked) {
   if (view === "album") {
-    // Álbum: marcada → preto, desmarcada → normal
+    // Álbum: marcada → preto, desmarcada → branco translúcido
     if (checked) {
       cell.classList.add("black");
+      cell.classList.remove("transparent");
       cell.classList.remove("gray");
       cell.classList.remove("yellow");
     } else {
       cell.classList.remove("black");
+      cell.classList.add("transparent"); // aplica branco translúcido
       cell.classList.remove("gray");
       cell.classList.remove("yellow");
     }
@@ -137,12 +139,15 @@ function updateVisual(cell, checked) {
     if (checked) {
       cell.classList.add("yellow");
       cell.classList.remove("gray");
+      cell.classList.remove("transparent");
     } else {
       cell.classList.remove("yellow");
       cell.classList.add("gray");
+      cell.classList.remove("transparent");
     }
   }
 }
+
 
     // Carrega existentes
     async function loadExisting() {

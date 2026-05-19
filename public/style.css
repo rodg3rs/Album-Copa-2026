@@ -227,5 +227,10 @@ body::before {
   background: #e0e0e0;
 }
 
+/* Células não marcadas no Álbum → branco translúcido */
+.stamp-cell.transparent {
+  background: rgba(255, 255, 255, 0.5); /* branco com 50% de transparência */
+  color: #000;                          /* número visível */
+}
 
 #user
