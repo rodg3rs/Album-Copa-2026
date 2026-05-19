@@ -17,7 +17,7 @@ body::before {
   content: "";
   position: fixed;
   inset: 0;
-  background: rgba(255,255,255,0.7); /* branco translúcido */
+  background: rgba(255,255,255,0.2); /* branco translúcido */
   z-index: -1; /* fica atrás do conteúdo */
 }
 
