@@ -233,4 +233,11 @@ body::before {
   color: #000;                          /* número visível */
 }
 
+#thermometer {
+  font-size: 12px;
+  font-style: italic;
+  color: #ffeb3b; /* amarelo para destacar */
+  margin-left: 10px;
+}
+
 #user

@@ -149,18 +149,30 @@ function updateVisual(cell, checked) {
 
 
     // Carrega existentes
-    async function loadExisting() {
-      const res = await fetch(`/controle?tipo=${tipo}`);
-      const data = await res.json();
-      if (!data.success) return;
-      const existing = new Set(data.stamps || []);
-      document.querySelectorAll(".stamp-cell").forEach(cell=>{
-        const code = cell.dataset.stamp;
-        const has = existing.has(code);
-        cell.dataset.checked = has ? "true" : "false";
-        updateVisual(cell, has);
-      });
-    }
+async function loadExisting() {
+  const res = await fetch(`/controle?tipo=${tipo}`);
+  const data = await res.json();
+  if (!data.success) return;
+  const existing = new Set(data.stamps || []);
+  document.querySelectorAll(".stamp-cell").forEach(cell=>{
+    const code = cell.dataset.stamp;
+    const has = existing.has(code);
+    cell.dataset.checked = has ? "true" : "false";
+    updateVisual(cell, has);
+  });
+
+  // calcula faltantes
+  const total = document.querySelectorAll(".stamp-cell").length;
+  const marcadas = existing.size;
+  const faltam = total - marcadas;
+
+  // atualiza termômetro no cabeçalho
+  const thermometer = document.getElementById("thermometer");
+  if (thermometer) {
+    thermometer.textContent = `Faltam ${faltam} figurinhas`;
+  }
+}
+
 
     // Clique alterna
     table.addEventListener("click", e=>{
