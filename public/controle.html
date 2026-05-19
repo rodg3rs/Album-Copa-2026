@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Controle de Figurinhas</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    table.album {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    table.album th, table.album td {
+      border: 1px solid #ccc;
+      text-align: center;
+      padding: 4px;
+    }
+    table.album th {
+      background: #f0f0f0;
+    }
+.stamp-cell {
+  width: 40px;
+  height: 30px;
+  cursor: pointer;
+  text-align: center;
+  vertical-align: middle;
+    }
+    .stamp-cell.black {
+      background: #000;
+      color: #000; /* esconde código */
+    }
+/* Para o modo Repetidas (R): quando NÃO marcada, fica cinza claro e mostra número */
+.stamp-cell.gray {
+  background: #ccc;   /* tom acinzentado */
+  color: #333;        /* número visível */
+}
+/* Repetidas (R): marcada → fundo amarelo, número em negrito */
+.stamp-cell.yellow {
+  background: #ffeb3b; /* amarelo */
+  color: #000;
+  font-weight: bold;
+}	
+    .stamp-cell.checked {
+      outline: 2px solid #2b8aef;
+    }
+  </style>
+</head>
+<body>
+  <h2 id="title"></h2>
+  <form id="album-form">
+    <table class="album" id="album-table"></table>
+    <button type="submit">Salvar</button>
+    <button type="button" onclick="voltar()">Voltar</button>
+  </form>
+  <div id="msg"></div>
+
+  <script>
+    // Seleções exemplo (adicione todas as 48)
+    const teams = ["MEX","RSA","KOR"];
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get("view") || "album";
+    const tipo = view === "repetidas" ? "R" : "A";
+    document.getElementById("title").textContent = view === "repetidas" ? "Minhas Repetidas" : "Meu Álbum";
+
+    const table = document.getElementById("album-table");
+
+    // Monta tabela
+    function buildTable() {
+      // Cabeçalho 1..20
+      let header = "<tr><th>Seleção</th>";
+      for (let i=1;i<=20;i++) header += `<th>${i}</th>`;
+      header += "</tr>";
+      table.innerHTML = header;
+
+      for (let team of teams) {
+        let row = `<tr><th>${team}</th>`;
+        for (let i=1;i<=20;i++) {
+          const code = `${team}${i}`;
+          row += `<td class="stamp-cell" data-stamp="${code}">${i}</td>`;
+        }
+        row += "</tr>";
+        table.innerHTML += row;
+      }
+    }
+
+    // Atualiza visual conforme regra
+function updateVisual(cell, checked) {
+  if (view === "album") {
+    // Álbum: marcada → preto, desmarcada → normal
+    if (checked) {
+      cell.classList.add("black");
+      cell.classList.remove("gray");
+      cell.classList.remove("yellow");
+    } else {
+      cell.classList.remove("black");
+      cell.classList.remove("gray");
+      cell.classList.remove("yellow");
+    }
+  } else {
+    // Repetidas: marcada → amarelo + negrito, desmarcada → cinza
+    if (checked) {
+      cell.classList.add("yellow");
+      cell.classList.remove("gray");
+    } else {
+      cell.classList.remove("yellow");
+      cell.classList.add("gray");
+    }
+  }
+}
+
+
+
+    // Carrega existentes
+    async function loadExisting() {
+      const res = await fetch(`/controle?tipo=${tipo}`);
+      const data = await res.json();
+      if (!data.success) return;
+      const existing = new Set(data.stamps || []);
+      document.querySelectorAll(".stamp-cell").forEach(cell=>{
+        const code = cell.dataset.stamp;
+        const has = existing.has(code);
+        cell.dataset.checked = has ? "true" : "false";
+        updateVisual(cell, has);
+      });
+    }
+
+    // Clique alterna
+    table.addEventListener("click", e=>{
+      if (e.target.classList.contains("stamp-cell")) {
+        const cell = e.target;
+        const checked = cell.dataset.checked === "true";
+        cell.dataset.checked = (!checked).toString();
+        updateVisual(cell, !checked);
+      }
+    });
+
+    // Salvar
+    document.getElementById("album-form").addEventListener("submit", async e=>{
+      e.preventDefault();
+      const checked = Array.from(document.querySelectorAll(".stamp-cell"))
+        .filter(c=>c.dataset.checked==="true")
+        .map(c=>c.dataset.stamp);
+      const res = await fetch("/controle", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ tipo, stamps: checked })
+      });
+      const data = await res.json();
+      document.getElementById("msg").textContent = data.success ? "Atualizado!" : data.error;
+    });
+
+    function voltar() {
+      window.parent.document.getElementById("content-frame").src = "home.html";
+    }
+
+    buildTable();
+    loadExisting();
+  </script>
+</body>
+</html>

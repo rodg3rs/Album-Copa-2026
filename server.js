@@ -1,0 +1,339 @@
+// server.js
+require("dotenv").config();
+const express = require("express");
+const bodyParser = require("body-parser");
+const session = require("express-session");
+const nodemailer = require("nodemailer");
+const cors = require("cors");
+const path = require("path");
+
+// Conexão com Turso (SQLite remoto)
+const { createClient } = require("@libsql/client");
+const turso = createClient({
+  url: process.env.TURSO_URL,
+  authToken: process.env.TURSO_TOKEN
+});
+
+const app = express();
+app.use(cors({
+  origin: true,           // ou 'http://localhost:3000' se quiser fixar
+  credentials: true
+}));
+
+app.use(bodyParser.json());
+
+app.use(session({
+  secret: "figurinhas2026",
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    secure: false,        // true apenas em HTTPS
+    sameSite: 'lax'       // ajusta conforme necessidade
+  }
+}));
+
+// Servir arquivos estáticos (HTML, CSS, JS)
+app.use(express.static(path.join(__dirname, "public")));
+
+// Rota raiz para teste
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// Configuração de envio de e-mail
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
+// ---------------- ROTAS ----------------
+
+// Cadastro
+app.post("/cadastro", async (req, res) => {
+  const { nome, email, senha } = req.body;
+  try {
+    await turso.execute({
+      sql: "INSERT INTO dManos (nome, eMail, senha) VALUES (?, ?, ?)",
+      args: [nome, email, senha]
+    });
+    res.json({ success: true, message: "Cadastro realizado com sucesso!" });
+  } catch (err) {
+    if (err.message.includes("UNIQUE constraint failed")) {
+      res.json({ success: false, error: "Este e-mail já está cadastrado." });
+    } else {
+      res.json({ success: false, error: "Erro ao cadastrar usuário." });
+    }
+  }
+});
+
+
+// Login
+app.post("/login", async (req, res) => {
+  const { nome, senha } = req.body;
+  try {
+    // use o nome exato da coluna no banco (provavelmente 'nome' e 'senha')
+    const result = await turso.execute({
+      sql: "SELECT * FROM dManos WHERE nome = ? AND senha = ?",
+      args: [nome, senha]
+    });
+
+    if (result.rows.length > 0) {
+      const usuario = result.rows[0];
+      // padroniza o objeto de sessão para ter ID e Nome (com essas chaves)
+      req.session.user = {
+        ID: usuario.ID ?? usuario.id,
+        Nome: usuario.nome ?? usuario.Nome ?? nome
+      };
+      res.json({ success: true, message: "Login realizado com sucesso!", nome: req.session.user.Nome, id: req.session.user.ID });
+    } else {
+      res.json({ success: false, error: "Nome ou senha inválidos." });
+    }
+  } catch (err) {
+    console.error("Erro /login:", err);
+    res.json({ success: false, error: "Erro ao realizar login." });
+  }
+});
+
+
+
+// Álbum (A/R)
+// Retorna stamps do usuário por tipo (A ou R)
+// ---------------- CONTROLE ----------------
+// Retorna stamps do usuário por tipo (A ou R)
+app.get("/controle", async (req, res) => {
+  if (!req.session.user) return res.status(403).json({ success:false, error: "Não logado" });
+  const tipo = (req.query.tipo || "A").toUpperCase();
+  try {
+    const result = await turso.execute({
+      sql: "SELECT Stamp FROM dControle WHERE ID = ? AND Tipo = ?",
+      args: [parseInt(req.session.user.ID), tipo]
+    });
+    const stamps = result.rows.map(r => r.Stamp);
+    res.json({ success: true, stamps });
+  } catch (err) {
+    res.status(500).json({ success:false, error: err.message });
+  }
+});
+
+// Atualiza dControle: insere novos e remove desmarcados
+app.post("/controle", async (req, res) => {
+  if (!req.session.user) return res.status(403).json({ success:false, error: "Não logado" });
+  const { tipo, stamps } = req.body;
+  const userId = parseInt(req.session.user.ID);
+  const t = (tipo || "A").toUpperCase();
+
+  try {
+    // Buscar existentes
+    const existingRes = await turso.execute({
+      sql: "SELECT Stamp FROM dControle WHERE ID = ? AND Tipo = ?",
+      args: [userId, t]
+    });
+    const existing = new Set(existingRes.rows.map(r => r.Stamp));
+
+    // Calcular diferenças
+    const incoming = new Set(Array.isArray(stamps) ? stamps : []);
+    const toInsert = [...incoming].filter(s => !existing.has(s));
+    const toDelete = [...existing].filter(s => !incoming.has(s));
+
+    // Inserir novos
+    for (let s of toInsert) {
+      await turso.execute({
+        sql: "INSERT OR IGNORE INTO dControle (ID, Stamp, Tipo) VALUES (?, ?, ?)",
+        args: [userId, s, t]
+      });
+    }
+
+    // Deletar removidos
+    if (toDelete.length > 0) {
+      const placeholders = toDelete.map(() => "?").join(",");
+      const sql = `DELETE FROM dControle WHERE ID = ? AND Tipo = ? AND Stamp IN (${placeholders})`;
+      await turso.execute({
+        sql,
+        args: [userId, t, ...toDelete]
+      });
+    }
+
+    res.json({ success: true, message: "Controle atualizado", inserted: toInsert.length, deleted: toDelete.length });
+  } catch (err) {
+    res.status(500).json({ success:false, error: err.message });
+  }
+});
+
+
+// Trocas (Eu Quero / Eu Troco)
+app.post("/troca", async (req, res) => {
+  if (!req.session.user) return res.status(403).json({ error: "Não logado" });
+  const { tipo, figurinha, destinatarioEmail } = req.body;
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: destinatarioEmail,
+      subject: "Solicitação de Troca de Figurinha",
+      text: `O usuário ${req.session.user.Nome} deseja trocar a figurinha ${figurinha} (${tipo}).`
+    });
+    res.json({ success: true, message: "Solicitação enviada!" });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get("/quero", async (req,res)=>{
+  if (!req.session.user) return res.status(403).json({success:false,error:"Não logado"});
+  const filtroUser = req.query.user || null;
+  const userId = parseInt(req.session.user.ID);
+
+  try {
+    // Lista completa de figurinhas
+    const teams = ["BRA","RSA","GER","FRA","ESP","ENG","POR","MEX","USA","CAN","JPN","KOR","NED","BEL","CRO","URU","COL","SEN","MAR","GHA","IRN","AUS","QAT","KSA","CMR","POL","SRB","TUN","ECU","SUI"];
+    const allStamps = [];
+    for (let team of teams) {
+      for (let i=1;i<=20;i++) {
+        allStamps.push(`${team}${i}`);
+      }
+    }
+
+    // Figurinhas que o usuário já tem no álbum
+    const albumRes = await turso.execute({
+      sql:"SELECT Stamp FROM dControle WHERE ID=? AND Tipo='A'",
+      args:[userId]
+    });
+    const albumSet = new Set(albumRes.rows.map(r=>r.Stamp));
+
+    // Faltantes = todas menos as que já tem
+    const faltantes = new Set(allStamps.filter(s=>!albumSet.has(s)));
+
+    // Repetidas dos outros usuários
+    let sql = "SELECT dManos.Nome, dControle.Stamp FROM dControle JOIN dManos ON dControle.ID=dManos.ID WHERE dControle.Tipo='R' AND dControle.ID<>?";
+    let args = [userId];
+    if (filtroUser) { sql += " AND dManos.Nome=?"; args.push(filtroUser); }
+    const repRes = await turso.execute({sql,args});
+
+    // Cruzamento
+    const result = [];
+    const users = new Set();
+    repRes.rows.forEach(r=>{
+      if (faltantes.has(r.Stamp)) {
+        const team = r.Stamp.replace(/[0-9]+$/,"");
+        let row = result.find(x=>x.user===r.Nome && x.team===team);
+        if (!row) { row={user:r.Nome,team,stamps:[]}; result.push(row); }
+        row.stamps.push(r.Stamp);
+        users.add(r.Nome);
+      }
+    });
+
+    res.json({success:true,users:[...users],result});
+  } catch(err) {
+    res.status(500).json({success:false,error:err.message});
+  }
+});
+
+app.get("/troco", async (req,res)=>{
+  if (!req.session.user) return res.status(403).json({success:false,error:"Não logado"});
+  const filtroUser = req.query.user || null;
+  const userId = parseInt(req.session.user.ID);
+
+  try {
+    // Suas repetidas
+    const repRes = await turso.execute({
+      sql:"SELECT Stamp FROM dControle WHERE ID=? AND Tipo='R'",
+      args:[userId]
+    });
+    const minhasRepetidas = new Set(repRes.rows.map(r=>r.Stamp));
+
+    // Faltantes dos outros usuários
+    let sql = "SELECT dManos.Nome, dControle.Stamp FROM dControle JOIN dManos ON dControle.ID=dManos.ID WHERE dControle.Tipo='A' AND dControle.ID<>?";
+    let args = [userId];
+    if (filtroUser) { sql += " AND dManos.Nome=?"; args.push(filtroUser); }
+    const faltRes = await turso.execute({sql,args});
+
+    // Cruzamento
+    const result = [];
+    const users = new Set();
+    faltRes.rows.forEach(r=>{
+      if (minhasRepetidas.has(r.Stamp)) {
+        const team = r.Stamp.replace(/[0-9]+$/,"");
+        let row = result.find(x=>x.user===r.Nome && x.team===team);
+        if (!row) { row={user:r.Nome,team,stamps:[]}; result.push(row); }
+        row.stamps.push(r.Stamp);
+        users.add(r.Nome);
+      }
+    });
+
+    res.json({success:true,users:[...users],result});
+  } catch(err) {
+    res.status(500).json({success:false,error:err.message});
+  }
+});
+
+// GET mensagens (últimas 24h)
+app.get("/chat", async (req,res)=>{
+  if (!req.session.user) return res.status(403).json({success:false,error:"Não logado"});
+  const cutoff = Math.floor(Date.now()/1000) - 24*3600;
+  try {
+    const result = await turso.execute({
+      sql:"SELECT Nome, Mensagem, Timestamp FROM dChat WHERE Timestamp>=? ORDER BY Timestamp ASC",
+      args:[cutoff]
+    });
+    const messages = result.rows.map(r=>({
+      user:r.Nome,
+      text:r.Mensagem,
+      timestamp:r.Timestamp
+    }));
+    res.json({success:true,currentUser:req.session.user.Nome,messages});
+  } catch(err) {
+    res.status(500).json({success:false,error:err.message});
+  }
+});
+
+// POST nova mensagem (corrigido — usa Nome e campo text)
+app.post("/chat", async (req, res) => {
+  console.log("POST /chat recebido - session present:", !!req.session.user, "body:", req.body);
+
+  if (!req.session.user) {
+    console.warn("POST /chat bloqueado: sem sessão");
+    return res.status(403).json({ success:false, error: "Não logado" });
+  }
+
+  const { text } = req.body;
+  console.log("POST /chat - user:", req.session.user.Nome, "text type:", typeof text);
+
+  if (!text || !text.trim()) return res.json({ success:false, error: "Mensagem vazia" });
+
+  const now = new Date();
+  const timestamp = Math.floor(Date.now() / 1000);
+
+  try {
+    await turso.execute({
+      sql: "INSERT INTO dChat (Nome, Mensagem, Data, Hora, Timestamp) VALUES (?, ?, ?, ?, ?)",
+      args: [
+        String(req.session.user.Nome),
+        String(text.trim()),
+        String(now.toISOString().split("T")[0]),
+        String(now.toTimeString().split(" ")[0]),
+        Number(timestamp)
+      ]
+    });
+    console.log("POST /chat: inserido com sucesso");
+    res.json({ success: true });
+  } catch (err) {
+    console.error("ERRO /chat INSERT:", err);
+    res.status(500).json({ success:false, error: err.message });
+  }
+});
+
+
+// Logout simples
+app.get("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.json({ success: true });
+  });
+});
+
+// ---------------- INICIALIZAÇÃO ----------------
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
+});
