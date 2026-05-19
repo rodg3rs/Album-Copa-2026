@@ -45,7 +45,9 @@
   </style>
 </head>
 <body>
-  <h2 id="title"></h2>
+<h2 id="title">
+  Meu Álbum <span id="thermometer"></span>
+</h2>
 
 <div class="album-wrapper">
   <form id="album-form">
@@ -147,7 +149,6 @@ function updateVisual(cell, checked) {
   }
 }
 
-
     // Carrega existentes
 async function loadExisting() {
   const res = await fetch(`/controle?tipo=${tipo}`);
@@ -161,19 +162,18 @@ async function loadExisting() {
     updateVisual(cell, has);
   });
 
-  // calcula faltantes
-  const total = document.querySelectorAll(".stamp-cell").length;
-  const marcadas = existing.size;
-  const faltam = total - marcadas;
+  // só calcula se for "Meu Álbum"
+  if (view === "album") {
+    const total = document.querySelectorAll(".stamp-cell").length;
+    const marcadas = existing.size;
+    const faltam = total - marcadas;
 
-  // atualiza termômetro no cabeçalho
-  const thermometer = document.getElementById("thermometer");
-  if (thermometer) {
-    thermometer.textContent = `Faltam ${faltam} figurinhas`;
+    const thermometer = document.getElementById("thermometer");
+    if (thermometer) {
+      thermometer.textContent = `(Faltam ${faltam} figurinhas)`;
+    }
   }
 }
-
-
     // Clique alterna
     table.addEventListener("click", e=>{
       if (e.target.classList.contains("stamp-cell")) {

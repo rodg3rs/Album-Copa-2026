@@ -236,8 +236,8 @@ body::before {
 #thermometer {
   font-size: 12px;
   font-style: italic;
-  color: #ffeb3b; /* amarelo para destacar */
-  margin-left: 10px;
+  color: #000;   /* preto */
+  margin-left: 8px;
 }
 
 // #user
