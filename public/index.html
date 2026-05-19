@@ -38,26 +38,26 @@
         </a>
       </li>
       <li>
-        <a href="controle.html" target="content-frame">
-          <i class="fa-solid fa-book"></i>
+<a href="controle.html" target="content-frame">
+          <i class="fa-regular fa-futbol"></i>
           <span>Meu Álbum</span>
         </a>
       </li>
       <li>
         <a href="controle.html?view=repetidas" target="content-frame">
-          <i class="fa-solid fa-clone"></i>
+          <i class="fa-regular fa-clone"></i>
           <span>Repetidas</span>
         </a>
       </li>
       <li>
         <a href="eu-quero.html?view=quero" target="content-frame">
-          <i class="fa-solid fa-star"></i>
+          <i class="fa-regular fa-star"></i>
           <span>Eu Quero</span>
         </a>
       </li>
       <li>
         <a href="eu-troco.html?view=troco" target="content-frame">
-          <i class="fa-solid fa-arrows-rotate"></i>
+          <i class="fa-regular fa-handshake"></i>
           <span>Eu Troco</span>
         </a>
       </li>
@@ -69,7 +69,7 @@
       </li>
       <li>
 	<a href="#" id="menu-sair">
-	  <i class="fa-solid fa-right-from-bracket"></i>
+	  <i class="fa-regular fa-circle-xmark"></i>
 	  <span>Sair</span>
 	</a>
       </li>
@@ -83,7 +83,18 @@
     await fetch("/logout", { credentials: "include" });
     window.location.href = "index.html";
   });
+
+  // Script para marcar item ativo no menu
+document.querySelectorAll('#bottom-container nav ul li a').forEach(link=>{
+  link.addEventListener('click', ()=>{
+    document.querySelectorAll('#bottom-container nav ul li a').forEach(l=>l.classList.remove('active'));
+    link.classList.add('active');
+  });
+});
+
 </script>
+
+
 
 </body>
 </html>

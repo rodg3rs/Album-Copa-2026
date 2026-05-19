@@ -23,7 +23,7 @@ body::before {
 
 /* Container Superior */
 #top-container {
-  background-color: #006400;
+  background-color: #004d61;
   color: white;
   padding: 10px;
   text-align: center;
@@ -78,7 +78,7 @@ body::before {
 
 
 #bottom-container {
-  background-color: #006400;
+  background-color: #004d61;
   color: white;
   position: fixed;
   bottom: 0;
@@ -86,12 +86,13 @@ body::before {
   height: 70px;
 }
 
+
 #bottom-container nav ul {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   align-items: center;
-  list-style: none;
-  height: 100%;
+  gap: 30px;
+  list-style: none;   /* remove os pontos */
   margin: 0;
   padding: 0;
 }
@@ -110,6 +111,10 @@ body::before {
   margin-bottom: 4px;
 }
 
+#bottom-container nav ul li a.active i {
+  color: #FFD700; /* amarelo ouro */
+}
+
 #bottom-container nav ul li a:hover span {
   text-decoration: underline;
 }
@@ -126,7 +131,7 @@ body::before {
 .form-container h2 {
   text-align: center;
   margin-bottom: 20px;
-  color: #006400;
+  color: #004d61;
 }
 
 .form-container label {
@@ -146,7 +151,7 @@ body::before {
   margin-top: 15px;
   width: 100%;
   padding: 10px;
-  background: #006400;
+  background: #004d61;
   color: white;
   border: none;
   border-radius: 4px;
@@ -155,7 +160,7 @@ body::before {
 }
 
 .form-container button:hover {
-  background: #004d00;
+  background: #003844;
 }
 
 .album-wrapper {
