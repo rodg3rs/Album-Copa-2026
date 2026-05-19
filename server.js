@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // server.js
 require("dotenv").config();
 const express = require("express");
@@ -67,9 +68,81 @@ app.post("/cadastro", async (req, res) => {
       res.json({ success: false, error: "Erro ao cadastrar usuário." });
     }
   }
+=======
+const express = require('express');
+const { createClient } = require('@libsql/client');
+const jwt = require('jsonwebtoken');
+const cors = require('cors');
+const nodemailer = require('nodemailer');
+require('dotenv').config();
+
+const app = express();
+app.use(express.json());
+app.use(cors());
+
+const db = createClient({
+    url: process.env.TURSO_URL,
+    authToken: process.env.TURSO_TOKEN,
 });
 
+// Configuração do E-mail (Preencher no .env)
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
+});
 
+const verifyToken = (req, res, next) => {
+    const token = req.headers['authorization']?.split(' ')[1];
+    if (!token) return res.status(403).json({ error: "Não autorizado" });
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) return res.status(401).json({ error: "Sessão expirada" });
+        req.user = decoded;
+        next();
+    });
+};
+
+// A. CADASTRO E VALIDAÇÕES (dManos)
+app.post('/api/register', async (req, res) => {
+    const { nome, senha, email } = req.body;
+
+    if (senha.length !== 6) return res.status(400).json({ error: "Senha deve ter 6 caracteres" });
+    if (!email.includes('@')) return res.status(400).json({ error: "E-mail inválido" });
+
+    try {
+        const lastUser = await db.execute("SELECT MAX(ID) as maxId FROM dManos");
+        let nextId = (lastUser.rows[0].maxId || 99) + 1;
+        if (nextId > 999) return res.status(400).json({ error: "Capacidade máxima atingida" });
+
+        await db.execute({
+            sql: "INSERT INTO dManos (ID, Nome, eMail, Senha) VALUES (?, ?, ?, ?)",
+            args: [nextId, nome, email, senha]
+        });
+
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Bem-vindo à Copa 2026",
+            text: `Olá ${nome}! Seu ID de acesso é: ${nextId}. Guarde sua senha de 6 dígitos.`
+        });
+
+        res.json({ success: true, id: nextId });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+>>>>>>> 8eab7a1 (WIP: preparar forçar atualização do main)
+});
+
+app.post('/api/login', async (req, res) => {
+    const { id, senha } = req.body;
+    const user = await db.execute({
+        sql: "SELECT * FROM dManos WHERE ID = ? AND Senha = ?",
+        args: [id, senha]
+    });
+    if (user.rows.length > 0) {
+        const token = jwt.sign({ id: user.rows[0].ID, nome: user.rows[0].Nome }, process.env.JWT_SECRET);
+        res.json({ token, nome: user.rows[0].Nome });
+    } else { res.status(401).json({ error: "ID ou Senha incorretos" }); }
+});
+
+<<<<<<< HEAD
 // Login
 app.post("/login", async (req, res) => {
   const { nome, senha } = req.body;
@@ -336,4 +409,53 @@ app.get("/logout", (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
+=======
+// B. CHAT COM LIMPEZA DE 24H (dChat)
+app.post('/api/chat', verifyToken, async (req, res) => {
+    const { mensagem } = req.body;
+    const agora = new Date();
+    const ts = agora.getTime();
+    try {
+        await db.execute({
+            sql: "INSERT INTO dChat (ID, Mensagem, Data, Hora, Timestamp) VALUES (?, ?, ?, ?, ?)",
+            args: [req.user.id, mensagem, agora.toLocaleDateString(), agora.toLocaleTimeString(), ts]
+        });
+        // Limpeza: 24h = 86400000 ms
+        await db.execute({ sql: "DELETE FROM dChat WHERE Timestamp < ?", args: [ts - 86400000] });
+        res.sendStatus(201);
+    } catch (e) { res.status(500).send(e.message); }
 });
+
+app.get('/api/chat', verifyToken, async (req, res) => {
+    const msgs = await db.execute("SELECT m.Nome, c.* FROM dChat c JOIN dManos m ON c.ID = m.ID ORDER BY Timestamp DESC");
+    res.json(msgs.rows);
+>>>>>>> 8eab7a1 (WIP: preparar forçar atualização do main)
+});
+
+// C. LÓGICA DE TROCAS (dControle - Linhas)
+// Tipo: 'A' (No Álbum) / 'R' (Repetida)
+app.post('/api/stickers', verifyToken, async (req, res) => {
+    const { stamp, tipo, acao } = req.body; // acao: 'add' ou 'remove'
+    if (acao === 'add') {
+        await db.execute({ sql: "INSERT INTO dControle (ID, Stamp, Tipo) VALUES (?, ?, ?)", args: [req.user.id, stamp, tipo] });
+    } else {
+        await db.execute({ sql: "DELETE FROM dControle WHERE ID = ? AND Stamp = ? AND Tipo = ?", args: [req.user.id, stamp, tipo] });
+    }
+    res.json({ success: true });
+});
+
+// "Eu Quero": Quem tem 'R' de algo que eu não tenho 'A'
+app.get('/api/match/want', verifyToken, async (req, res) => {
+    const query = `
+        SELECT DISTINCT m.Nome, m.eMail, c.Stamp 
+        FROM dControle c 
+        JOIN dManos m ON c.ID = m.ID 
+        WHERE c.Tipo = 'R' 
+        AND c.ID != ?
+        AND c.Stamp NOT IN (SELECT Stamp FROM dControle WHERE ID = ? AND Tipo = 'A')
+    `;
+    const result = await db.execute({ sql: query, args: [req.user.id, req.user.id] });
+    res.json(result.rows);
+});
+
+app.listen(process.env.PORT || 3000, () => console.log("Servidor Online"));
