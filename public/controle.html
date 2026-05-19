@@ -70,8 +70,11 @@
   const params = new URLSearchParams(window.location.search);
   const view = params.get("view") || "album";
   const tipo = view === "repetidas" ? "R" : "A";
-  document.getElementById("title").textContent = view === "repetidas" ? "Minhas Repetidas" : "Meu Álbum";
-
+  if (view === "repetidas") {
+  document.getElementById("title").textContent = "Minhas Repetidas";
+} else {
+  document.getElementById("title").innerHTML = 'Meu Álbum <span id="thermometer"></span>';
+}
   const table = document.getElementById("album-table");
 
   // Monta tabela completa
@@ -163,7 +166,7 @@ async function loadExisting() {
   });
 
   // só calcula se for "Meu Álbum"
-  if (view === "album") {
+  if (tipo === "A") {
     const total = document.querySelectorAll(".stamp-cell").length;
     const marcadas = existing.size;
     const faltam = total - marcadas;
