@@ -60,9 +60,9 @@
 <script>
   // Lista completa das 48 seleções
   const teams = [
-    "BRA","MEX","GER","FRA","ESP","ENG","POR","USA","CAN","JPN","KOR","NED","BEL","CRO","URU","COL",
-    "SEN","MAR","GHA","IRN","AUS","QAT","KSA","CMR","POL","SRB","TUN","ECU","SUI","ARG","CHI","PER",
-    "BOL","PAR","VEN","NOR","SWE","DEN","ITA","CZE","GRE","TUR","EGY","ALG","NGA","ZAF","NZL","RUS"
+    "MEX","RSA","KOR","CZE","CAN","BIH","QAT","SUI","BRA","MAR","HAI","SCO","USA","PAR","AUS","TUR",
+    "GER","CUW","CIV","ECU","NED","JPN","SWE","TUN","BEL","EGY","IRN","NZL","ESP","CPV","KSA","URU",
+    "FRA","SEN","IRQ","NOR","ARG","ALG","AUT","JOR","POR","COD","UZB","COL","ENG","CRO","GHA","PAN"
   ];
 
   const params = new URLSearchParams(window.location.search);
@@ -79,6 +79,14 @@ for (let i=1;i<=20;i++) header += `<th>${i}</th>`;
 header += "</tr>";
 table.innerHTML = header;
 
+    // FWC iniciais (0–8)
+    let rowFWC = `<tr><th>FWC 0–8</th>`;
+    for (let i=0;i<=8;i++) {
+      const code = `FWC${i}`;
+      rowFWC += `<td class="stamp-cell" data-stamp="${code}">${i}</td>`;
+    }
+    rowFWC += "</tr>";
+    table.innerHTML += rowFWC;
 
     // Seleções
     for (let team of teams) {
@@ -90,15 +98,6 @@ table.innerHTML = header;
       row += "</tr>";
       table.innerHTML += row;
     }
-
-    // FWC iniciais (00–8)
-    let rowFWC = `<tr><th>FWC 00–8</th>`;
-    for (let i=0;i<=8;i++) {
-      const code = `FWC${i}`;
-      rowFWC += `<td class="stamp-cell" data-stamp="${code}">${i}</td>`;
-    }
-    rowFWC += "</tr>";
-    table.innerHTML += rowFWC;
 
     // FWC adicionais (9–19)
     let rowFWC2 = `<tr><th>FWC 9–19</th>`;
