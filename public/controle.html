@@ -172,17 +172,20 @@ async function loadExisting() {
   });
 
   // só calcula se for "Meu Álbum"
-if (tipo === "A" && data.total !== undefined) {
-  const percent = Math.round((data.marcadas / data.total) * 100);
-  const fill = document.querySelector(".thermometer-fill");
-  const text = document.querySelector(".thermometer-text");
+	if (tipo === "A" && data.total !== undefined) {
+	  const percent = Math.round((data.marcadas / data.total) * 100);
+	  const fill = document.querySelector(".thermometer-fill");
+	  const text = document.querySelector(".thermometer-text");
 
-  if (fill && text) {
-    fill.style.width = percent + "%";
-    text.textContent = `Faltam ${data.faltam} de ${data.total} (${percent}% completo)`;
-  }
-}
+	  if (fill && text) {
+		// largura proporcional ao progresso
+		let widthPercent = percent + "%";
+		fill.style.width = widthPercent;
 
+		// texto dentro da barra
+		text.textContent = `Faltam ${data.faltam} de ${data.total} (${percent}% completo)`;
+	  }
+	}
 }
     // Clique alterna
     table.addEventListener("click", e=>{
