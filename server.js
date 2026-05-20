@@ -16,7 +16,7 @@ const turso = createClient({
 
 const app = express();
 app.use(cors({
-  origin: true,           // ou 'http://localhost:3000' se quiser fixar
+  origin: true,
   credentials: true
 }));
 
@@ -74,7 +74,6 @@ app.post("/cadastro", async (req, res) => {
 app.post("/login", async (req, res) => {
   const { nome, senha } = req.body;
   try {
-    // use o nome exato da coluna no banco (provavelmente 'nome' e 'senha')
     const result = await turso.execute({
       sql: "SELECT * FROM dManos WHERE nome = ? AND senha = ?",
       args: [nome, senha]
@@ -82,7 +81,6 @@ app.post("/login", async (req, res) => {
 
     if (result.rows.length > 0) {
       const usuario = result.rows[0];
-      // padroniza o objeto de sessão para ter ID e Nome (com essas chaves)
       req.session.user = {
         ID: usuario.ID ?? usuario.id,
         Nome: usuario.nome ?? usuario.Nome ?? nome
@@ -98,9 +96,6 @@ app.post("/login", async (req, res) => {
 });
 
 
-
-// Álbum (A/R)
-// Retorna stamps do usuário por tipo (A ou R)
 // ---------------- CONTROLE ----------------
 // Retorna stamps do usuário por tipo (A ou R)
 app.get("/controle", async (req, res) => {
@@ -187,7 +182,11 @@ app.get("/quero", async (req,res)=>{
 
   try {
     // Lista completa de figurinhas
-    const teams = ["BRA","RSA","GER","FRA","ESP","ENG","POR","MEX","USA","CAN","JPN","KOR","NED","BEL","CRO","URU","COL","SEN","MAR","GHA","IRN","AUS","QAT","KSA","CMR","POL","SRB","TUN","ECU","SUI"];
+  const teams = [
+    "MEX","RSA","KOR","CZE","CAN","BIH","QAT","SUI","BRA","MAR","HAI","SCO","USA","PAR","AUS","TUR",
+    "GER","CUW","CIV","ECU","NED","JPN","SWE","TUN","BEL","EGY","IRN","NZL","ESP","CPV","KSA","URU",
+    "FRA","SEN","IRQ","NOR","ARG","ALG","AUT","JOR","POR","COD","UZB","COL","ENG","CRO","GHA","PAN"
+  ];
     const allStamps = [];
     for (let team of teams) {
       for (let i=1;i<=20;i++) {
@@ -288,7 +287,7 @@ app.get("/chat", async (req,res)=>{
   }
 });
 
-// POST nova mensagem (corrigido — usa Nome e campo text)
+// POST nova mensagem
 app.post("/chat", async (req, res) => {
   console.log("POST /chat recebido - session present:", !!req.session.user, "body:", req.body);
 
