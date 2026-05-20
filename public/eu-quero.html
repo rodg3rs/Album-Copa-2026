@@ -48,7 +48,6 @@
     const table = document.getElementById("quero-table");
     const filterSelect = document.getElementById("user-filter");
 
-    // Monta tabela com cruzamento
     async function buildQuero() {
       const userFilter = filterSelect.value;
       const res = await fetch("/quero" + (userFilter ? "?user="+userFilter : ""));
@@ -68,7 +67,7 @@
         filterSelect.appendChild(opt);
       });
 
-      // Cabeçalho
+      // Cabeçalho genérico (1–20)
       let header = "<tr><th>Usuário</th><th>Seleção</th>";
       for (let i=1;i<=20;i++) header += `<th>${i}</th>`;
       header += "</tr>";
@@ -77,11 +76,32 @@
       // Linhas por usuário
       data.result.forEach(row=>{
         let tr = `<tr><td>${row.user}</td><td>${row.team}</td>`;
-        for (let i=1;i<=20;i++) {
-          const code = `${row.team}${i}`;
-          const has = row.stamps.includes(code);
-          tr += `<td class="stamp-cell ${has ? 'yellow' : 'gray'}">${i}</td>`;
+
+        // Caso seja FWC (0–19)
+        if (row.team.startsWith("FWC")) {
+          for (let i=0;i<=19;i++) {
+            const code = `FWC${i}`;
+            const has = row.stamps.includes(code);
+            tr += `<td class="stamp-cell ${has ? 'yellow' : 'gray'}">${i}</td>`;
+          }
         }
+        // Caso seja Coca-Cola (CC1–CC14)
+        else if (row.team === "CC") {
+          for (let i=1;i<=14;i++) {
+            const code = `CC${i}`;
+            const has = row.stamps.includes(code);
+            tr += `<td class="stamp-cell ${has ? 'yellow' : 'gray'}">${i}</td>`;
+          }
+        }
+        // Caso seja seleção normal (1–20)
+        else {
+          for (let i=1;i<=20;i++) {
+            const code = `${row.team}${i}`;
+            const has = row.stamps.includes(code);
+            tr += `<td class="stamp-cell ${has ? 'yellow' : 'gray'}">${i}</td>`;
+          }
+        }
+
         tr += "</tr>";
         table.innerHTML += tr;
       });
