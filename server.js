@@ -108,15 +108,25 @@ app.get("/controle", async (req, res) => {
     const stamps = result.rows.map(r => r.Stamp);
 
     // Lista completa de figurinhas
-    const teams = [/* mesma lista do controle.html */];
+  const teams = [
+    "MEX","RSA","KOR","CZE","CAN","BIH","QAT","SUI","BRA","MAR","HAI","SCO","USA","PAR","AUS","TUR",
+    "GER","CUW","CIV","ECU","NED","JPN","SWE","TUN","BEL","EGY","IRN","NZL","ESP","CPV","KSA","URU",
+    "FRA","SEN","IRQ","NOR","ARG","ALG","AUT","JOR","POR","COD","UZB","COL","ENG","CRO","GHA","PAN"
+  ];
     const allStamps = [];
+
+	// Seleções
     for (let team of teams) {
       for (let i=1;i<=20;i++) allStamps.push(`${team}${i}`);
     }
-    for (let i=0;i<=19;i++) allStamps.push(`FWC${i}`);
-    for (let i=1;i<=14;i++) allStamps.push(`CC${i}`);
+    
+	// FWC 0-19
+	for (let i=0;i<=19;i++) allStamps.push(`FWC${i}`);
+    
+	// Coca-Cola CC1-CC14
+	for (let i=1;i<=14;i++) allStamps.push(`CC${i}`);
 
-    const total = allStamps.length;
+    const total = allStamps.length; // 994 figurinhas
     const marcadas = stamps.length;
     const faltam = total - marcadas;
 
