@@ -95,7 +95,6 @@ app.post("/login", async (req, res) => {
   }
 });
 
-
 // ---------------- CONTROLE ----------------
 // Retorna stamps do usuário por tipo (A ou R)
 app.get("/controle", async (req, res) => {
@@ -121,7 +120,7 @@ app.get("/controle", async (req, res) => {
     const marcadas = stamps.length;
     const faltam = total - marcadas;
 
-    res.json({ success: true, stamps });
+    res.json({ success: true, stamps, total, marcadas, faltam });
   } catch (err) {
     res.status(500).json({ success:false, error: err.message });
   }

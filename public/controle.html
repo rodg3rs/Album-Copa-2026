@@ -66,7 +66,6 @@
     "GER","CUW","CIV","ECU","NED","JPN","SWE","TUN","BEL","EGY","IRN","NZL","ESP","CPV","KSA","URU",
     "FRA","SEN","IRQ","NOR","ARG","ALG","AUT","JOR","POR","COD","UZB","COL","ENG","CRO","GHA","PAN"
   ];
-
   const params = new URLSearchParams(window.location.search);
   const view = params.get("view") || "album";
   const tipo = view === "repetidas" ? "R" : "A";
@@ -167,12 +166,12 @@ async function loadExisting() {
   });
 
   // só calcula se for "Meu Álbum"
-  if (tipo === "A") {
-    const thermometer = document.getElementById("thermometer");
-    if (thermometer) {
-      thermometer.textContent = `(Faltam ${faltam} figurinhas)`;
-    }
-  }
+	if (tipo === "A" && data.total !== undefined) {
+	const thermometer = document.getElementById("thermometer");
+		if (thermometer) {
+			thermometer.textContent = `(Faltam ${data.faltam} figurinhas de ${data.total})`;
+		}
+	}
 }
     // Clique alterna
     table.addEventListener("click", e=>{
