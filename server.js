@@ -173,19 +173,54 @@ app.post("/controle", async (req, res) => {
 
 
 // Trocas (Eu Quero / Eu Troco)
-app.post("/troca", async (req, res) => {
-  if (!req.session.user) return res.status(403).json({ error: "Não logado" });
-  const { tipo, figurinha, destinatarioEmail } = req.body;
+app.get("/troco", async (req,res)=>{
+  if (!req.session.user) return res.status(403).json({success:false,error:"Não logado"});
+  const filtroUser = req.query.user || null;
+  const userId = parseInt(req.session.user.ID);
+
   try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: destinatarioEmail,
-      subject: "Solicitação de Troca de Figurinha",
-      text: `O usuário ${req.session.user.Nome} deseja trocar a figurinha ${figurinha} (${tipo}).`
+    // Suas repetidas
+    const repRes = await turso.execute({
+      sql:"SELECT Stamp FROM dControle WHERE ID=? AND Tipo='R'",
+      args:[userId]
     });
-    res.json({ success: true, message: "Solicitação enviada!" });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    const minhasRepetidas = new Set(repRes.rows.map(r=>r.Stamp));
+
+    // Faltantes dos outros usuários (ou seja, figurinhas que eles NÃO têm no álbum)
+    let sql = `
+      SELECT dManos.Nome, s.Stamp
+      FROM (
+        SELECT Stamp FROM dControle WHERE ID=? AND Tipo='R'
+      ) s
+      CROSS JOIN dManos
+      WHERE dManos.ID<>?
+        AND NOT EXISTS (
+          SELECT 1 FROM dControle
+          WHERE dControle.ID=dManos.ID
+            AND dControle.Tipo='A'
+            AND dControle.Stamp=s.Stamp
+        )
+    `;
+    let args = [userId, userId];
+    if (filtroUser) { sql += " AND dManos.Nome=?"; args.push(filtroUser); }
+    const faltRes = await turso.execute({sql,args});
+
+    // Cruzamento
+    const result = [];
+    const users = new Set();
+    faltRes.rows.forEach(r=>{
+      if (minhasRepetidas.has(r.Stamp)) {
+        const team = r.Stamp.replace(/[0-9]+$/,"");
+        let row = result.find(x=>x.user===r.Nome && x.team===team);
+        if (!row) { row={user:r.Nome,team,stamps:[]}; result.push(row); }
+        row.stamps.push(r.Stamp);
+        users.add(r.Nome);
+      }
+    });
+
+    res.json({success:true,users:[...users],result});
+  } catch(err) {
+    res.status(500).json({success:false,error:err.message});
   }
 });
 
