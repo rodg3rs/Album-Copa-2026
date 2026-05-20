@@ -157,6 +157,7 @@ async function loadExisting() {
   const res = await fetch(`/controle?tipo=${tipo}`);
   const data = await res.json();
   if (!data.success) return;
+
   const existing = new Set(data.stamps || []);
   document.querySelectorAll(".stamp-cell").forEach(cell=>{
     const code = cell.dataset.stamp;
@@ -167,10 +168,6 @@ async function loadExisting() {
 
   // só calcula se for "Meu Álbum"
   if (tipo === "A") {
-    const total = document.querySelectorAll(".stamp-cell").length;
-    const marcadas = existing.size;
-    const faltam = total - marcadas;
-
     const thermometer = document.getElementById("thermometer");
     if (thermometer) {
       thermometer.textContent = `(Faltam ${faltam} figurinhas)`;

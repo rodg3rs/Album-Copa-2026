@@ -107,6 +107,20 @@ app.get("/controle", async (req, res) => {
       args: [parseInt(req.session.user.ID), tipo]
     });
     const stamps = result.rows.map(r => r.Stamp);
+
+    // Lista completa de figurinhas
+    const teams = [/* mesma lista do controle.html */];
+    const allStamps = [];
+    for (let team of teams) {
+      for (let i=1;i<=20;i++) allStamps.push(`${team}${i}`);
+    }
+    for (let i=0;i<=19;i++) allStamps.push(`FWC${i}`);
+    for (let i=1;i<=14;i++) allStamps.push(`CC${i}`);
+
+    const total = allStamps.length;
+    const marcadas = stamps.length;
+    const faltam = total - marcadas;
+
     res.json({ success: true, stamps });
   } catch (err) {
     res.status(500).json({ success:false, error: err.message });
