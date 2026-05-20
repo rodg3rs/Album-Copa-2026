@@ -75,7 +75,7 @@
 
       // Linhas por usuário
       data.result.forEach(row=>{
-        let tr = `<tr><td>${row.user}</td><td>${row.team}</td>`;
+        let tr = `<tr><td class="user-cell">${row.user}</td><td class="team-cell">${row.team}</td>`;
 
         // Caso seja FWC (0–19)
         if (row.team.startsWith("FWC")) {

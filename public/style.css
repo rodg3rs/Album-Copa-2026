@@ -42,6 +42,12 @@ body::before {
   gap: 10px;
 }
 
+.user-cell, .team-cell {
+  background: #fff;   /* fundo branco */
+  color: #000;        /* texto preto */
+  font-weight: bold;  /* opcional, para destacar */
+}
+
 #login-link {
   display: flex;
   flex-direction: column;
