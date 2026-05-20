@@ -259,7 +259,10 @@ body::before {
   transition: width 0.5s ease;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start; /* <-- muda de center para flex-start */
+  padding-left: 8px;           /* espaço para não colar na borda */
+}
+
 }
 
 .thermometer-text {
