@@ -233,10 +233,14 @@ body::before {
   color: #000;                          /* número visível */
 }
 
+#title {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* espaço entre texto e barra */
+}
+
 #thermometer {
-  width: 100%;
-  max-width: 600px;
-  margin: 10px 0;
+  flex: 1; /* barra ocupa o espaço restante */
 }
 
 .thermometer-bar {
@@ -245,21 +249,24 @@ body::before {
   background: #ddd;
   border-radius: 12px;
   overflow: hidden;
+  position: relative;
 }
 
 .thermometer-fill {
   height: 100%;
   width: 0%;
-  background: linear-gradient(to right, #ff0000, #ffeb3b, #4caf50);
+  background: linear-gradient(to right, #ffeb3b, #4caf50);
   transition: width 0.5s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .thermometer-text {
-  text-align: center;
-  margin-top: 5px;
+  color: #000;
+  font-size: 12px;
+  font-style: italic;
   font-weight: bold;
-  font-size: 12px;   /* mantém o tamanho pequeno */
-  font-style: italic; /* mantém o estilo itálico */
-  color: #000;        /* mantém preto */
+  white-space: nowrap;
 }
 

@@ -45,17 +45,17 @@
   </style>
 </head>
 <body>
+
 <h2 id="title">
   Meu Álbum
-</h2>
-
-<div id="thermometer">
-  <div class="thermometer-bar">
-    <div class="thermometer-fill"></div>
+  <div id="thermometer">
+    <div class="thermometer-bar">
+      <div class="thermometer-fill">
+        <span class="thermometer-text"></span>
+      </div>
+    </div>
   </div>
-  <div class="thermometer-text"></div>
-</div>
-
+</h2>
 
 <div class="album-wrapper">
   <form id="album-form">
@@ -181,7 +181,7 @@ if (tipo === "A" && data.total !== undefined) {
 
   if (fill && text) {
     fill.style.width = percent + "%";
-    text.textContent = `(Faltam ${data.faltam} figurinhas de ${data.total}) - ${percent}% completo`;
+    text.textContent = `Faltam ${data.faltam} de ${data.total} (${percent}% completo)`;
   }
 }
 
