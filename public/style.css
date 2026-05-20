@@ -234,8 +234,32 @@ body::before {
 }
 
 #thermometer {
-  font-size: 12px;
-  font-style: italic;
-  color: #000;   /* preto */
-  margin-left: 8px;
+  width: 100%;
+  max-width: 600px;
+  margin: 10px 0;
 }
+
+.thermometer-bar {
+  width: 100%;
+  height: 25px;
+  background: #ddd;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.thermometer-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(to right, #ff0000, #ffeb3b, #4caf50);
+  transition: width 0.5s ease;
+}
+
+.thermometer-text {
+  text-align: center;
+  margin-top: 5px;
+  font-weight: bold;
+  font-size: 12px;   /* mantém o tamanho pequeno */
+  font-style: italic; /* mantém o estilo itálico */
+  color: #000;        /* mantém preto */
+}
+

@@ -46,8 +46,16 @@
 </head>
 <body>
 <h2 id="title">
-  Meu Álbum <span id="thermometer"></span>
+  Meu Álbum
 </h2>
+
+<div id="thermometer">
+  <div class="thermometer-bar">
+    <div class="thermometer-fill"></div>
+  </div>
+  <div class="thermometer-text"></div>
+</div>
+
 
 <div class="album-wrapper">
   <form id="album-form">
@@ -166,12 +174,17 @@ async function loadExisting() {
   });
 
   // só calcula se for "Meu Álbum"
-	if (tipo === "A" && data.total !== undefined) {
-	const thermometer = document.getElementById("thermometer");
-		if (thermometer) {
-			thermometer.textContent = `(Faltam ${data.faltam} figurinhas de ${data.total})`;
-		}
-	}
+if (tipo === "A" && data.total !== undefined) {
+  const percent = Math.round((data.marcadas / data.total) * 100);
+  const fill = document.querySelector(".thermometer-fill");
+  const text = document.querySelector(".thermometer-text");
+
+  if (fill && text) {
+    fill.style.width = percent + "%";
+    text.textContent = `(Faltam ${data.faltam} figurinhas de ${data.total}) - ${percent}% completo`;
+  }
+}
+
 }
     // Clique alterna
     table.addEventListener("click", e=>{
