@@ -23,7 +23,6 @@ app.use(cors({
 
 app.use(bodyParser.json());
 
-// Substitua o seu app.use(session(...)) por este:
 app.use(session({
   store: new LibSqlStore({
     client: turso,            // Usa a conexão 'turso' que você já criou acima
