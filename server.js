@@ -25,16 +25,16 @@ app.use(bodyParser.json());
 
 app.use(session({
   store: new SQLiteStore({
-    db: "sessoes.db",        // Nome do arquivo de banco de dados para os logins
-    dir: "./var/db"          // Pasta onde o arquivo será criado automaticamente
+    db: "sessoes.db", // O arquivo será criado direto na raiz do projeto
+    dir: "."          // O ponto significa: "esta mesma pasta onde o servidor está rodando"
   }),
   secret: "figurinhas2026",
   resave: false,
-  saveUninitialized: false,  // Mudado para false para economizar espaço
+  saveUninitialized: false,
   cookie: {
-    secure: false,           // Mantenha false para testar local. Se o Render for HTTPS, use: process.env.NODE_ENV === "production"
+    secure: false, // Mantenha false para testes. Em produção com HTTPS mude para: process.env.NODE_ENV === "production"
     sameSite: 'lax',
-    maxAge: 1000 * 60 * 60 * 24 * 7 // Mantém o usuário logado por 7 dias
+    maxAge: 1000 * 60 * 60 * 24 * 7
   }
 }));
 
