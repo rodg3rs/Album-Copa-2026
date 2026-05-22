@@ -3,7 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const session = require("express-session");
-const LibSqlStore = require("connect-libsql")(session);
+const SQLiteStore = require("connect-sqlite3")(session);
 const nodemailer = require("nodemailer");
 const cors = require("cors");
 const path = require("path");
@@ -24,17 +24,17 @@ app.use(cors({
 app.use(bodyParser.json());
 
 app.use(session({
-  store: new LibSqlStore({
-    client: turso,            // Usa a conexão 'turso' que você já criou acima
-    table: "dSessoes"         // Nome da tabela que armazenará as sessões no Turso
+  store: new SQLiteStore({
+    db: "sessoes.db",        // Nome do arquivo de banco de dados para os logins
+    dir: "./var/db"          // Pasta onde o arquivo será criado automaticamente
   }),
-  secret: process.env.SESSION_SECRET || "figurinhas2026", // Boa prática usar .env para o secret
+  secret: "figurinhas2026",
   resave: false,
-  saveUninitialized: false,   // Alterado para false (evita criar sessões vazias no banco)
+  saveUninitialized: false,  // Mudado para false para economizar espaço
   cookie: {
-    secure: process.env.NODE_ENV === "production", // true se estiver rodando em produção (HTTPS no Render)
+    secure: false,           // Mantenha false para testar local. Se o Render for HTTPS, use: process.env.NODE_ENV === "production"
     sameSite: 'lax',
-    maxAge: 1000 * 60 * 60 * 24 * 7 // Opcional: Mantém o usuário logado por 7 dias
+    maxAge: 1000 * 60 * 60 * 24 * 7 // Mantém o usuário logado por 7 dias
   }
 }));
 
