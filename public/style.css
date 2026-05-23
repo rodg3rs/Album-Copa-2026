@@ -351,3 +351,99 @@ body::before {
     height: 25px !important;    
   }
 }
+.flag {
+  display: inline-block;
+  width: 24px;
+  height: 16px;
+  background-image: url("img/bandeiras.webp"); /* Mudança aqui! */
+  background-repeat: no-repeat;
+  background-size: 192px 128px;
+  vertical-align: middle;
+  margin-right: 6px;
+  border: 1px solid #ddd;
+}
+
+/* POSICIONAMENTO DA GRADE (Mapeamento X e Y de cada país) */
+
+/* Linha 1 */
+.flag-UAE { background-position: 0px 0px; }
+.flag-ARG { background-position: -24px 0px; }
+.flag-AUT { background-position: -48px 0px; }
+.flag-BEL { background-position: -72px 0px; }
+.flag-CAN { background-position: -96px 0px; }
+.flag-BRA { background-position: -120px 0px; }
+.flag-BEN { background-position: -144px 0px; }
+.flag-BUL { background-position: -168px 0px; }
+
+/* Linha 2 */
+.flag-HUN { background-position: 0px -16px; }
+.flag-IRL { background-position: -24px -16px; }
+.flag-ESP { background-position: -48px -16px; }
+.flag-FRA { background-position: -72px -16px; }
+.flag-GUI { background-position: -96px -16px; }
+.flag-GRE { background-position: -120px -16px; }
+.flag-EST { background-position: -144px -16px; }
+.flag-FIN { background-position: -168px -16px; }
+
+/* Linha 3 */
+.flag-JPN { background-position: 0px -32px; }
+.flag-KOR { background-position: -24px -32px; }
+.flag-LTU { background-position: -48px -32px; }
+.flag-LUX { background-position: -72px -32px; }
+.flag-LBY { background-position: -96px -32px; }
+.flag-MAR { background-position: -120px -32px; }
+.flag-MON { background-position: -144px -32px; }
+.flag-POL { background-position: -168px -32px; }
+
+/* Linha 4 */
+.flag-NZL { background-position: 0px -48px; }
+.flag-PAN { background-position: -24px -48px; }
+.flag-SUD { background-position: -48px -48px; }
+.flag-SGP { background-position: -72px -48px; }
+.flag-SWE { background-position: -96px -48px; }
+.flag-RSA { background-position: -120px -48px; }
+.flag-TAN { background-position: -144px -48px; }
+.flag-UKR { background-position: -168px -48px; }
+
+/* Linha 5 */
+.flag-PLE { background-position: 0px -64px; }
+.flag-SEN { background-position: -24px -64px; }
+.flag-SOM { background-position: -48px -64px; }
+.flag-TUR { background-position: -72px -64px; }
+.flag-ROU { background-position: -96px -64px; }
+.flag-NER { background-position: -120px -64px; }
+.flag-RUS { background-position: -144px -64px; }
+.flag-CHN { background-position: -168px -64px; }
+
+/* Linha 6 */
+.flag-GER { background-position: 0px -80px; }
+.flag-DEN { background-position: -24px -80px; }
+.flag-USA { background-position: -48px -80px; }
+.flag-MAD { background-position: -96px -80px; }
+.flag-NGA { background-position: -72px -80px; }
+.flag-MLI { background-position: -120px -80px; }
+.flag-NED { background-position: -144px -80px; }
+.flag-NOR { background-position: -168px -80px; }
+
+/* Linha 7 */
+.flag-HON { background-position: 0px -96px; }
+.flag-JAM { background-position: -24px -96px; }
+.flag-PUR { background-position: -48px -96px; }
+.flag-CZE { background-position: -72px -96px; }
+.flag-SYR { background-position: -96px -96px; }
+.flag-CHA { background-position: -120px -96px; }
+.flag-THA { background-position: -144px -96px; }
+.flag-VIE { background-position: -168px -96px; }
+
+/* Linha 8 */
+.flag-ENG { background-position: 0px -112px; }
+.flag-IND { background-position: -24px -112px; }
+.flag-ISR { background-position: -48px -112px; }
+.flag-ISL { background-position: -72px -112px; }
+.flag-ITA { background-position: -96px -112px; }
+.flag-COL { background-position: -120px -112px; }
+.flag-CUB { background-position: -144px -112px; }
+.flag-CRC { background-position: -168px -112px; }
+
+/* Classes especiais para itens que não possuem bandeira na folha (opcional, evita quebras) */
+.flag-FWC, .flag-CC { display: none; }
