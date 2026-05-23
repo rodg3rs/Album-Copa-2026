@@ -188,54 +188,72 @@ app.post("/controle", async (req, res) => {
 
 
 // Trocas (Eu Quero / Eu Troco)
-app.get("/troco", async (req,res)=>{
-  if (!req.session.user) return res.status(403).json({success:false,error:"Não logado"});
+app.get("/troco", async (req, res) => {
+  if (!req.session.user) return res.status(403).json({ success: false, error: "Não logado" });
   const filtroUser = req.query.user || null;
   const userId = parseInt(req.session.user.ID);
 
   try {
-    // Suas repetidas
+    // 1. Coleta todas as suas figurinhas repetidas (Tipo R)
     const repRes = await turso.execute({
-      sql:"SELECT Stamp FROM dControle WHERE ID=? AND Tipo='R'",
-      args:[userId]
+      sql: "SELECT Stamp FROM dControle WHERE ID = ? AND Tipo = 'R'",
+      args: [userId]
     });
-    const minhasRepetidas = new Set(repRes.rows.map(r=>r.Stamp));
+    const minhasRepetidas = new Set(repRes.rows.map(r => r.Stamp));
 
-    // Faltantes dos outros usuários (ou seja, figurinhas que eles NÃO têm no álbum)
+    // Se você não tiver nenhuma repetida, não há o que cruzar. Retorna vazio rápido.
+    if (minhasRepetidas.size === 0) {
+      return res.json({ success: true, users: [], result: [] });
+    }
+
+    // 2. Busca quais usuários NÃO possuem as figurinhas que você tem para repetir (Álbum Tipo A)
+    // Usamos o CROSS JOIN com dManos para testar suas repetidas contra todos os usuários
     let sql = `
       SELECT dManos.Nome, s.Stamp
       FROM (
-        SELECT Stamp FROM dControle WHERE ID=? AND Tipo='R'
+        SELECT Stamp FROM dControle WHERE ID = ? AND Tipo = 'R'
       ) s
       CROSS JOIN dManos
-      WHERE dManos.ID<>?
+      WHERE dManos.ID <> ?
         AND NOT EXISTS (
           SELECT 1 FROM dControle
-          WHERE dControle.ID=dManos.ID
-            AND dControle.Tipo='A'
-            AND dControle.Stamp=s.Stamp
+          WHERE dControle.ID = dManos.ID
+            AND dControle.Tipo = 'A'
+            AND dControle.Stamp = s.Stamp
         )
     `;
+    
     let args = [userId, userId];
-    if (filtroUser) { sql += " AND dManos.Nome=?"; args.push(filtroUser); }
-    const faltRes = await turso.execute({sql,args});
+    if (filtroUser) { 
+      sql += " AND dManos.Nome = ?"; 
+      args.push(filtroUser); 
+    }
+    
+    const faltRes = await turso.execute({ sql, args });
 
-    // Cruzamento
+    // 3. Agrupamento do cruzamento por usuário e por sigla (incluindo FWC e CC)
     const result = [];
     const users = new Set();
-    faltRes.rows.forEach(r=>{
+
+    faltRes.rows.forEach(r => {
       if (minhasRepetidas.has(r.Stamp)) {
-        const team = r.Stamp.replace(/[0-9]+$/,"");
-        let row = result.find(x=>x.user===r.Nome && x.team===team);
-        if (!row) { row={user:r.Nome,team,stamps:[]}; result.push(row); }
+        // Extrai a sigla da equipe: "MEX15" vira "MEX", "FWC12" vira "FWC", "CC3" vira "CC"
+        const team = r.Stamp.replace(/[0-9]+$/, "");
+        
+        let row = result.find(x => x.user === r.Nome && x.team === team);
+        if (!row) { 
+          row = { user: r.Nome, team, stamps: [] }; 
+          result.push(row); 
+        }
         row.stamps.push(r.Stamp);
         users.add(r.Nome);
       }
     });
 
-    res.json({success:true,users:[...users],result});
-  } catch(err) {
-    res.status(500).json({success:false,error:err.message});
+    res.json({ success: true, users: [...users], result });
+  } catch (err) {
+    console.error("Erro /troco:", err);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -279,44 +297,6 @@ app.get("/quero", async (req,res)=>{
     const users = new Set();
     repRes.rows.forEach(r=>{
       if (faltantes.has(r.Stamp)) {
-        const team = r.Stamp.replace(/[0-9]+$/,"");
-        let row = result.find(x=>x.user===r.Nome && x.team===team);
-        if (!row) { row={user:r.Nome,team,stamps:[]}; result.push(row); }
-        row.stamps.push(r.Stamp);
-        users.add(r.Nome);
-      }
-    });
-
-    res.json({success:true,users:[...users],result});
-  } catch(err) {
-    res.status(500).json({success:false,error:err.message});
-  }
-});
-
-app.get("/troco", async (req,res)=>{
-  if (!req.session.user) return res.status(403).json({success:false,error:"Não logado"});
-  const filtroUser = req.query.user || null;
-  const userId = parseInt(req.session.user.ID);
-
-  try {
-    // Suas repetidas
-    const repRes = await turso.execute({
-      sql:"SELECT Stamp FROM dControle WHERE ID=? AND Tipo='R'",
-      args:[userId]
-    });
-    const minhasRepetidas = new Set(repRes.rows.map(r=>r.Stamp));
-
-    // Faltantes dos outros usuários
-    let sql = "SELECT dManos.Nome, dControle.Stamp FROM dControle JOIN dManos ON dControle.ID=dManos.ID WHERE dControle.Tipo='A' AND dControle.ID<>?";
-    let args = [userId];
-    if (filtroUser) { sql += " AND dManos.Nome=?"; args.push(filtroUser); }
-    const faltRes = await turso.execute({sql,args});
-
-    // Cruzamento
-    const result = [];
-    const users = new Set();
-    faltRes.rows.forEach(r=>{
-      if (minhasRepetidas.has(r.Stamp)) {
         const team = r.Stamp.replace(/[0-9]+$/,"");
         let row = result.find(x=>x.user===r.Nome && x.team===team);
         if (!row) { row={user:r.Nome,team,stamps:[]}; result.push(row); }
