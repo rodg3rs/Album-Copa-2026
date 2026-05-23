@@ -17,30 +17,37 @@
     table.album th {
       background: #f0f0f0;
     }
-.stamp-cell {
-  width: 40px;
-  height: 30px;
-  cursor: pointer;
-  text-align: center;
-  vertical-align: middle;
+    .stamp-cell {
+      width: 40px;
+      height: 30px;
+      cursor: pointer;
+      text-align: center;
+      vertical-align: middle;
     }
     .stamp-cell.black {
       background: #000;
       color: #000; /* esconde código */
     }
-/* Para o modo Repetidas (R): quando NÃO marcada, fica cinza claro e mostra número */
-.stamp-cell.gray {
-  background: #ccc;   /* tom acinzentado */
-  color: #333;        /* número visível */
-}
-/* Repetidas (R): marcada → fundo amarelo, número em negrito */
-.stamp-cell.yellow {
-  background: #ffeb3b; /* amarelo */
-  color: #000;
-  font-weight: bold;
-}	
+    /* Para o modo Repetidas (R): quando NÃO marcada, fica cinza claro e mostra número */
+    .stamp-cell.gray {
+      background: #ccc;   /* tom acinzentado */
+      color: #333;        /* número visível */
+    }
+    /* Repetidas (R): marcada → fundo amarelo, número em negrito */
+    .stamp-cell.yellow {
+      background: #ffeb3b; /* amarelo */
+      color: #000;
+      font-weight: bold;
+    }	
     .stamp-cell.checked {
       outline: 2px solid #2b8aef;
+    }
+    /* Estilo para as bandeiras individuais */
+    .country-flag {
+      width: 24px;
+      height: auto;
+      border-radius: 2px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     }
   </style>
 </head>
@@ -74,23 +81,36 @@
     "GER","CUW","CIV","ECU","NED","JPN","SWE","TUN","BEL","EGY","IRN","NZL","ESP","CPV","KSA","URU",
     "FRA","SEN","IRQ","NOR","ARG","ALG","AUT","JOR","POR","COD","UZB","COL","ENG","CRO","GHA","PAN"
   ];
+  
+  // ADICIONADO: Dicionário que traduz as 3 letras para o arquivo da pasta flags
+  const flagMap = {
+    "MEX": "mx", "RSA": "za", "KOR": "kr", "CZE": "cz", "CAN": "ca", "BIH": "ba",
+    "QAT": "qa", "SUI": "ch", "BRA": "br", "MAR": "ma", "HAI": "ht", "SCO": "gb-sct",
+    "USA": "us", "PAR": "py", "AUS": "au", "TUR": "tr", "GER": "de", "CUW": "cw",
+    "CIV": "ci", "ECU": "ec", "NED": "nl", "JPN": "jp", "SWE": "se", "TUN": "tn",
+    "BEL": "be", "EGY": "eg", "IRN": "ir", "NZL": "nz", "ESP": "es", "CPV": "cv",
+    "KSA": "sa", "URU": "uy", "FRA": "fr", "SEN": "sn", "IRQ": "iq", "NOR": "no",
+    "ARG": "ar", "ALG": "dz", "AUT": "at", "JOR": "jo", "POR": "pt", "COD": "cd",
+    "UZB": "uz", "COL": "co", "ENG": "gb-eng", "CRO": "hr", "GHA": "gh", "PAN": "pa"
+  };
+  
   const params = new URLSearchParams(window.location.search);
   const view = params.get("view") || "album";
   const tipo = view === "repetidas" ? "R" : "A";
   if (view === "repetidas") {
-  document.getElementById("title").textContent = "Minhas Repetidas";
-}
+    document.getElementById("title").textContent = "Minhas Repetidas";
+  }
   const table = document.getElementById("album-table");
 
   // Monta tabela completa
   function buildTable() {
-	let header = "<tr><th style='width: 80px !important; min-width: 80px !important; white-space: nowrap; text-align: left; padding-left: 5px;'>Seleção</th>";
-	for (let i=1;i<=20;i++) header += `<th>${i}</th>`;
-	header += "</tr>";
-	table.innerHTML = header;
+    let header = "<tr><th style='width: 90px !important; min-width: 90px !important; white-space: nowrap; text-align: left; padding-left: 5px;'>Seleção</th>";
+    for (let i=1;i<=20;i++) header += `<th>${i}</th>`;
+    header += "</tr>";
+    table.innerHTML = header;
 
     // FWC iniciais (0–8)
-	let rowFWC = `<tr><th style='width: 80px !important; min-width: 80px !important; white-space: nowrap; text-align: left; padding-left: 5px;'>FWC</th>`;
+    let rowFWC = `<tr><th style='width: 90px !important; min-width: 90px !important; white-space: nowrap; text-align: left; padding-left: 5px;'>FWC</th>`;
     for (let i=0;i<=8;i++) {
       const code = `FWC${i}`;
       rowFWC += `<td class="stamp-cell" data-stamp="${code}">${i}</td>`;
@@ -98,11 +118,14 @@
     rowFWC += "</tr>";
     table.innerHTML += rowFWC;
 
-// Seleções
+    // Seleções
     for (let team of teams) {
-      // ADICIONADO: <span class="flag flag-${team}"></span> antes do nome da seleção
-      let row = `<tr><th style='width: 80px !important; min-width: 80px !important; white-space: nowrap; text-align: left; padding-left: 5px;'>
-        <span class="flag flag-${team}"></span>${team}
+      const flagCode = flagMap[team] || "default";
+      
+      // ALTERADO: Substituído span por tag img integrada com display flex para alinhamento correto
+      let row = `<tr><th style='width: 90px !important; min-width: 90px !important; white-space: nowrap; text-align: left; padding-left: 5px; display: flex; align-items: center; gap: 6px;'>
+        <img src="img/flags/${flagCode}.svg" class="country-flag" alt="${team}">
+        <span>${team}</span>
       </th>`;
       
       for (let i=1; i<=20; i++) {
@@ -114,7 +137,7 @@
     }
 
     // FWC adicionais (9–19)
-	let rowFWC2 = `<tr><th style='width: 80px !important; min-width: 80px !important; white-space: nowrap; text-align: left; padding-left: 5px;'>FWC</th>`;
+    let rowFWC2 = `<tr><th style='width: 90px !important; min-width: 90px !important; white-space: nowrap; text-align: left; padding-left: 5px;'>FWC</th>`;
     for (let i=9;i<=19;i++) {
       const code = `FWC${i}`;
       rowFWC2 += `<td class="stamp-cell" data-stamp="${code}">${i}</td>`;
@@ -123,7 +146,7 @@
     table.innerHTML += rowFWC2;
 
     // Coca-Cola (CC1–CC14)
-	let rowCC = `<tr><th style='width: 80px !important; min-width: 80px !important; white-space: nowrap; text-align: left; padding-left: 5px;'>Coca-Cola</th>`;
+    let rowCC = `<tr><th style='width: 90px !important; min-width: 90px !important; white-space: nowrap; text-align: left; padding-left: 5px;'>Coca-Cola</th>`;
     for (let i=1;i<=14;i++) {
       const code = `CC${i}`;
       rowCC += `<td class="stamp-cell" data-stamp="${code}">${i}</td>`;
@@ -132,102 +155,96 @@
     table.innerHTML += rowCC;
   }
 
-    // Atualiza visual conforme regra
-function updateVisual(cell, checked) {
-  if (view === "album") {
-    // Álbum: marcada → preto, desmarcada → branco translúcido
-    if (checked) {
-      cell.classList.add("black");
-      cell.classList.remove("transparent");
-      cell.classList.remove("gray");
-      cell.classList.remove("yellow");
+  // Atualiza visual conforme regra
+  function updateVisual(cell, checked) {
+    if (view === "album") {
+      if (checked) {
+        cell.classList.add("black");
+        cell.classList.remove("transparent");
+        cell.classList.remove("gray");
+        cell.classList.remove("yellow");
+      } else {
+        cell.classList.remove("black");
+        cell.classList.add("transparent");
+        cell.classList.remove("gray");
+        cell.classList.remove("yellow");
+      }
     } else {
-      cell.classList.remove("black");
-      cell.classList.add("transparent"); // aplica branco translúcido
-      cell.classList.remove("gray");
-      cell.classList.remove("yellow");
-    }
-  } else {
-    // Repetidas: marcada → amarelo + negrito, desmarcada → cinza
-    if (checked) {
-      cell.classList.add("yellow");
-      cell.classList.remove("gray");
-      cell.classList.remove("transparent");
-    } else {
-      cell.classList.remove("yellow");
-      cell.classList.add("gray");
-      cell.classList.remove("transparent");
+      if (checked) {
+        cell.classList.add("yellow");
+        cell.classList.remove("gray");
+        cell.classList.remove("transparent");
+      } else {
+        cell.classList.remove("yellow");
+        cell.classList.add("gray");
+        cell.classList.remove("transparent");
+      }
     }
   }
-}
 
-    // Carrega existentes
-async function loadExisting() {
-  const res = await fetch(`/controle?tipo=${tipo}`);
-  const data = await res.json();
-  if (!data.success) return;
+  // Carrega existentes
+  async function loadExisting() {
+    const res = await fetch(`/controle?tipo=${tipo}`);
+    const data = await res.json();
+    if (!data.success) return;
 
-  const existing = new Set(data.stamps || []);
-  document.querySelectorAll(".stamp-cell").forEach(cell=>{
-    const code = cell.dataset.stamp;
-    const has = existing.has(code);
-    cell.dataset.checked = has ? "true" : "false";
-    updateVisual(cell, has);
-  });
-
-  // só calcula se for "Meu Álbum"
-	if (tipo === "A" && data.total !== undefined) {
-	  const percent = Math.round((data.marcadas / data.total) * 100);
-	  const fill = document.querySelector(".thermometer-fill");
-	  const text = document.querySelector(".thermometer-text");
-
-	  if (fill && text) {
-		// largura proporcional ao progresso
-		let widthPercent = percent + "%";
-		fill.style.width = widthPercent;
-
-		// texto dentro da barra
-		text.textContent = `Faltam ${data.faltam} de ${data.total} (${percent}% completo)`;
-	  }
-	}
-}
-    // Clique alterna
-    table.addEventListener("click", e=>{
-      if (e.target.classList.contains("stamp-cell")) {
-        const cell = e.target;
-        const checked = cell.dataset.checked === "true";
-        cell.dataset.checked = (!checked).toString();
-        updateVisual(cell, !checked);
-      }
+    const existing = new Set(data.stamps || []);
+    document.querySelectorAll(".stamp-cell").forEach(cell=>{
+      const code = cell.dataset.stamp;
+      const has = existing.has(code);
+      cell.dataset.checked = has ? "true" : "false";
+      updateVisual(cell, has);
     });
 
-    // Salvar
-    document.getElementById("album-form").addEventListener("submit", async e=>{
-      e.preventDefault();
-      const checked = Array.from(document.querySelectorAll(".stamp-cell"))
-        .filter(c=>c.dataset.checked==="true")
-        .map(c=>c.dataset.stamp);
-      const res = await fetch("/controle", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({ tipo, stamps: checked })
-      });
-      const data = await res.json();
-  if (data.success) {
-    alert("Atualizado!");
-    // recalcula faltantes
-    loadExisting();
-  } else {
-    alert(data.error);
-  }
-});
+    if (tipo === "A" && data.total !== undefined) {
+      const percent = Math.round((data.marcadas / data.total) * 100);
+      const fill = document.querySelector(".thermometer-fill");
+      const text = document.querySelector(".thermometer-text");
 
-    function voltar() {
-      window.parent.document.getElementById("content-frame").src = "home.html";
+      if (fill && text) {
+        let widthPercent = percent + "%";
+        fill.style.width = widthPercent;
+        text.textContent = `Faltam ${data.faltam} de ${data.total} (${percent}% completo)`;
+      }
     }
+  }
 
-    buildTable();
-    loadExisting();
-  </script>
+  // Clique alterna
+  table.addEventListener("click", e=>{
+    if (e.target.classList.contains("stamp-cell")) {
+      const cell = e.target;
+      const checked = cell.dataset.checked === "true";
+      cell.dataset.checked = (!checked).toString();
+      updateVisual(cell, !checked);
+    }
+  });
+
+  // Salvar
+  document.getElementById("album-form").addEventListener("submit", async e=>{
+    e.preventDefault();
+    const checked = Array.from(document.querySelectorAll(".stamp-cell"))
+      .filter(c=>c.dataset.checked==="true")
+      .map(c=>c.dataset.stamp);
+    const res = await fetch("/controle", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ tipo, stamps: checked })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert("Atualizado!");
+      loadExisting();
+    } else {
+      alert(data.error);
+    }
+  });
+
+  function voltar() {
+    window.parent.document.getElementById("content-frame").src = "home.html";
+  }
+
+  buildTable();
+  loadExisting();
+</script>
 </body>
 </html>
