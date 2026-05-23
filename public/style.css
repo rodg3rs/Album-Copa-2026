@@ -207,7 +207,8 @@ body::before {
 /* tabela */
 .album {
   border-collapse: collapse;
-  min-width: 900px; /* força largura para testar scroll */
+  width: 100%;          /* Altere de min-width: 900px para width: 100% */
+  table-layout: fixed;  /* Força o navegador a dividir as colunas matematicamente iguais */
 }
 
 /* cabeçalho fixo */
@@ -275,4 +276,72 @@ body::before {
   font-style: italic;
   font-weight: bold;
   white-space: nowrap;          /* mantém numa linha só */
+}
+/* ... TODO O SEU CÓDIGO ATUAL CONTINUA AQUI IGUALZINHO ... */
+
+#title {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+#thermometer {
+  flex: 1;
+}
+
+.thermometer-bar {
+  width: 100%;
+  height: 25px;
+  background: #ddd;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.thermometer-fill {
+  height: 100%;
+  min-width: fit-content;
+  background: linear-gradient(to right, #ffeb3b, #4caf50);
+  transition: width 0.5s ease;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+
+.thermometer-text {
+  color: #000;
+  font-size: 12px;
+  font-style: italic;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  
+  .album-wrapper {
+    padding: 0;
+    border: none;
+    overflow-x: hidden; 
+  }
+
+  .album th, 
+  .album td {
+    padding: 2px 1px !important; 
+    font-size: 9px !important;    
+    text-align: center;
+    word-break: break-all;      
+  }
+
+  .album th:first-child,
+  .album td:first-child {
+    width: 35px !important;     
+    font-size: 10px !important;
+    position: static !important; 
+  }
+
+  .stamp-cell {
+    width: calc((100% - 35px) / 20) !important;
+    height: 25px !important;    
+  }
 }
