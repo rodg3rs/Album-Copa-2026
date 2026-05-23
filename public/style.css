@@ -355,96 +355,111 @@ body::before {
 /* CONFIGURAÇÃO DO SPRITE DE BANDEIRAS (GRADE 8x8 REAIS)    */
 /* ======================================================== */
 
+/* ======================================================== */
+/* CONFIGURAÇÃO DE BANDEIRAS INDIVIDUAIS (SEGURO)           */
+/* ======================================================== */
+
 .flag {
   display: inline-block;
-  width: 26px;                /* Largura visível da bandeira na tabela */
-  height: 18px;               /* Altura visível da bandeira na tabela */
+  width: 26px;                /* Largura visível da bandeira */
+  height: 18px;               /* Altura visível da bandeira */
+  
+  /* Ponto-chave: Usamos a nova imagem processada que já contém apenas as bandeiras recortadas */
   background-image: url("img/bandeiras.webp");
   background-repeat: no-repeat;
   
-  /* Ajusta o tamanho total da folha para isolar o texto superior das células */
-  background-size: 290px 225px; 
+  /* Redimensiona a folha para que cada bandeira se encaixe perfeitamente no 26x18 */
+  background-size: 208px 144px; /* 26px * 8 colunas | 18px * 8 linhas */
+  
   vertical-align: middle;
-  margin-right: 5px;
-  border-radius: 2px;         /* Cantos levemente arredondados para acabamento */
-  box-shadow: 0 1px 3px rgba(0,0,0,0.15); /* Sombra sutil para dar o efeito de sticker */
+  margin-right: 6px;
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2); /* Efeito sticker */
 }
 
-/* MAPEAMENTO CIRÚRGICO (X e Y)
-  Focado apenas no retângulo interno de cada país, ocultando as escritas.
+/* MAPEAMENTO SIMPLES DE GRADE (Sem recortes de texto)
+   Agora é uma grade perfeita de 8x8.
 */
 
 /* Linha 1 */
-.flag-CAN { background-position: -3px -12px; }
-.flag-USA { background-position: -39px -12px; }
-.flag-MEX { background-position: -75px -12px; }
-.flag-BRA { background-position: -111px -12px; }
-.flag-ARG { background-position: -147px -12px; }
-.flag-FRA { background-position: -183px -12px; }
-.flag-ESP { background-position: -219px -12px; }
-.flag-UFA { background-position: -255px -12px; } /* Usado para Azerbaijan/UFA na folha */
+.flag-CAN { background-position: 0px 0px; }
+.flag-USA { background-position: -26px 0px; }
+.flag-MEX { background-position: -52px 0px; }
+.flag-BRA { background-position: -78px 0px; }
+.flag-ARG { background-position: -104px 0px; }
+.flag-FRA { background-position: -130px 0px; }
+.flag-ESP { background-position: -156px 0px; }
+.flag-UFA { background-position: -182px 0px; } /* Azerbaijan/UFA */
 
 /* Linha 2 */
-.flag-GER { background-position: -3px -38px; }
-.flag-ANG { background-position: -39px -38px; }
-.flag-EUR { background-position: -75px -38px; }
-.flag-GIIR { background-position: -111px -38px; }
-.flag-ENG { background-position: -147px -38px; }
-.flag-ITA { background-position: -219px -38px; }
-.flag-POR { background-position: -255px -38px; }
+.flag-GER { background-position: 0px -18px; }
+.flag-ANG { background-position: -26px -18px; }
+.flag-EUR { background-position: -52px -18px; }
+.flag-GIIR { background-position: -78px -18px; }
+.flag-ENG { background-position: -104px -18px; }
+/* Segunda UFA na folha ignorada para manter coerência */
+.flag-ITA { background-position: -156px -18px; }
+.flag-POR { background-position: -182px -18px; }
 
 /* Linha 3 */
-.flag-BEL { background-position: -3px -64px; }
-.flag-CRO { background-position: -39px -64px; }
-.flag-NED { background-position: -75px -64px; }
-.flag-SEN { background-position: -147px -64px; }
-.flag-MAR { background-position: -183px -64px; }
-.flag-MEI { background-position: -219px -64px; }
-.flag-AFC { background-position: -255px -64px; }
+.flag-BEL { background-position: 0px -36px; }
+.flag-CRO { background-position: -26px -36px; }
+.flag-NED { background-position: -52px -36px; }
+/* Segunda NED na folha ignorada */
+.flag-SEN { background-position: -104px -36px; }
+.flag-MAR { background-position: -130px -36px; }
+.flag-MEI { background-position: -156px -36px; }
+.flag-AFC { background-position: -182px -36px; }
 
 /* Linha 4 */
-.flag-NZZ { background-position: -3px -90px; }
-.flag-JPN { background-position: -39px -90px; }
-.flag-PAN { background-position: -75px -90px; }
-.flag-KOR { background-position: -111px -90px; }
-.flag-SUF { background-position: -147px -90px; }
-.flag-CAF { background-position: -183px -90px; }
-.flag-TAN { background-position: -219px -90px; }
-.flag-UKE { background-position: -255px -90px; }
+.flag-NZZ { background-position: 0px -54px; }
+.flag-JPN { background-position: -26px -54px; }
+.flag-PAN { background-position: -52px -54px; }
+.flag-KOR { background-position: -78px -54px; }
+.flag-SUF { background-position: -104px -54px; }
+.flag-CAF { background-position: -130px -54px; }
+.flag-TAN { background-position: -156px -54px; }
+.flag-UKE { background-position: -182px -54px; }
 
 /* Linha 5 */
-.flag-OFC { background-position: -3px -117px; }
-.flag-SOM { background-position: -75px -117px; }
-.flag-TUR { background-position: -111px -117px; }
-.flag-ROM { background-position: -183px -117px; }
-.flag-NER { background-position: -219px -117px; }
-.flag-RUS { background-position: -219px -117px; }
-.flag-CHN { background-position: -255px -117px; }
+.flag-OFC { background-position: 0px -72px; }
+/* Segunda KOR ignorada */
+.flag-SOM { background-position: -52px -72px; }
+.flag-TUR { background-position: -78px -72px; }
+.flag-ROM { background-position: -104px -72px; }
+.flag-NER { background-position: -130px -72px; } /* Niger */
+.flag-RUS { background-position: -156px -72px; }
+.flag-CHN { background-position: -182px -72px; }
 
 /* Linha 6 */
-.flag-DEN { background-position: -39px -143px; }
-.flag-MAD { background-position: -111px -143px; }
-.flag-NGA { background-position: -147px -143px; }
-.flag-MLI { background-position: -183px -143px; }
-.flag-NOR { background-position: -255px -143px; }
+/* Segunda GER ignorada */
+.flag-DEN { background-position: -26px -90px; }
+/* Segunda USA ignorada */
+.flag-MAD { background-position: -78px -90px; }
+.flag-NGA { background-position: -104px -90px; }
+.flag-MLI { background-position: -130px -90px; } /* Mail/Mali */
+/* Segunda NED ignorada */
+.flag-NOR { background-position: -182px -90px; }
 
 /* Linha 7 */
-.flag-HON { background-position: -3px -169px; }
-.flag-JAM { background-position: -39px -169px; }
-.flag-PUR { background-position: -75px -169px; }
-.flag-CZE { background-position: -111px -169px; }
-.flag-SYR { background-position: -147px -169px; }
-.flag-CHA { background-position: -183px -169px; }
-.flag-THA { background-position: -219px -169px; }
-.flag-VIE { background-position: -255px -169px; }
+.flag-HON { background-position: 0px -108px; }
+.flag-JAM { background-position: -26px -108px; }
+.flag-PUR { background-position: -52px -108px; }
+.flag-CZE { background-position: -78px -108px; }
+.flag-SYR { background-position: -104px -108px; } /* Iryla/Syria */
+.flag-CHA { background-position: -130px -108px; }
+.flag-THA { background-position: -156px -108px; } /* Toland/Thailand */
+.flag-VIE { background-position: -182px -108px; }
 
 /* Linha 8 */
-.flag-IND { background-position: -39px -195px; }
-.flag-ISR { background-position: -75px -195px; }
-.flag-ISL { background-position: -111px -195px; }
-.flag-COL { background-position: -183px -195px; }
-.flag-CUB { background-position: -247px -195px; }
-.flag-CRC { background-position: -255px -195px; }
+/* United Kingdom ignorado para manter ENG */
+.flag-IND { background-position: -26px -126px; }
+.flag-ISR { background-position: -52px -126px; }
+.flag-ISL { background-position: -78px -126px; }
+.flag-ITA { background-position: -104px -126px; } /* Segunda ITA */
+.flag-COL { background-position: -130px -126px; }
+.flag-CUB { background-position: -156px -126px; }
+.flag-CRC { background-position: -182px -126px; }
 
-/* Ocultar elementos que não correspondem a seleções do array */
+/* Ocultar elementos especiais */
 .flag-FWC, .flag-CC { display: none !important; }
