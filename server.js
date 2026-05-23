@@ -257,57 +257,57 @@ app.get("/troco", async (req, res) => {
   }
 });
 
-app.get("/quero", async (req,res)=>{
-  if (!req.session.user) return res.status(403).json({success:false,error:"Não logado"});
+app.get("/quero", async (req, res) => {
+  if (!req.session.user) return res.status(403).json({ success: false, error: "Não logado" });
   const filtroUser = req.query.user || null;
   const userId = parseInt(req.session.user.ID);
 
   try {
-    // Lista completa de figurinhas
-  const teams = [
-    "MEX","RSA","KOR","CZE","CAN","BIH","QAT","SUI","BRA","MAR","HAI","SCO","USA","PAR","AUS","TUR",
-    "GER","CUW","CIV","ECU","NED","JPN","SWE","TUN","BEL","EGY","IRN","NZL","ESP","CPV","KSA","URU",
-    "FRA","SEN","IRQ","NOR","ARG","ALG","AUT","JOR","POR","COD","UZB","COL","ENG","CRO","GHA","PAN"
-  ];
-    const allStamps = [];
-    for (let team of teams) {
-      for (let i=1;i<=20;i++) {
-        allStamps.push(`${team}${i}`);
-      }
+    // LÓGICA INTELIGENTE: Busca as repetidas (Tipo 'R') dos OUTROS usuários,
+    // mas APENAS se você NÃO tiver essa figurinha no seu álbum (Tipo 'A')
+    let sql = `
+      SELECT dManos.Nome, r.Stamp
+      FROM dControle r
+      JOIN dManos ON r.ID = dManos.ID
+      WHERE r.Tipo = 'R' 
+        AND r.ID <> ?
+        AND NOT EXISTS (
+          SELECT 1 FROM dControle a
+          WHERE a.ID = ? 
+            AND a.Tipo = 'A'
+            AND a.Stamp = r.Stamp
+        )
+    `;
+    
+    let args = [userId, userId];
+    if (filtroUser) { 
+      sql += " AND dManos.Nome = ?"; 
+      args.push(filtroUser); 
     }
+    
+    const repRes = await turso.execute({ sql, args });
 
-    // Figurinhas que o usuário já tem no álbum
-    const albumRes = await turso.execute({
-      sql:"SELECT Stamp FROM dControle WHERE ID=? AND Tipo='A'",
-      args:[userId]
-    });
-    const albumSet = new Set(albumRes.rows.map(r=>r.Stamp));
-
-    // Faltantes = todas menos as que já tem
-    const faltantes = new Set(allStamps.filter(s=>!albumSet.has(s)));
-
-    // Repetidas dos outros usuários
-    let sql = "SELECT dManos.Nome, dControle.Stamp FROM dControle JOIN dManos ON dControle.ID=dManos.ID WHERE dControle.Tipo='R' AND dControle.ID<>?";
-    let args = [userId];
-    if (filtroUser) { sql += " AND dManos.Nome=?"; args.push(filtroUser); }
-    const repRes = await turso.execute({sql,args});
-
-    // Cruzamento
+    // Agrupamento do resultado por usuário e sigla (MEX, FWC, CC...)
     const result = [];
     const users = new Set();
-    repRes.rows.forEach(r=>{
-      if (faltantes.has(r.Stamp)) {
-        const team = r.Stamp.replace(/[0-9]+$/,"");
-        let row = result.find(x=>x.user===r.Nome && x.team===team);
-        if (!row) { row={user:r.Nome,team,stamps:[]}; result.push(row); }
-        row.stamps.push(r.Stamp);
-        users.add(r.Nome);
+
+    repRes.rows.forEach(r => {
+      // Extrai a sigla da equipe (Ex: "MEX12" -> "MEX", "FWC5" -> "FWC")
+      const team = r.Stamp.replace(/[0-9]+$/, "");
+      
+      let row = result.find(x => x.user === r.Nome && x.team === team);
+      if (!row) { 
+        row = { user: r.Nome, team, stamps: [] }; 
+        result.push(row); 
       }
+      row.stamps.push(r.Stamp);
+      users.add(r.Nome);
     });
 
-    res.json({success:true,users:[...users],result});
-  } catch(err) {
-    res.status(500).json({success:false,error:err.message});
+    res.json({ success: true, users: [...users], result });
+  } catch (err) {
+    console.error("Erro /quero inteligente:", err);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
