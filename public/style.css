@@ -351,99 +351,100 @@ body::before {
     height: 25px !important;    
   }
 }
+/* ======================================================== */
+/* CONFIGURAÇÃO DO SPRITE DE BANDEIRAS (GRADE 8x8 REAIS)    */
+/* ======================================================== */
+
 .flag {
   display: inline-block;
-  width: 24px;
-  height: 16px;
-  background-image: url("img/bandeiras.webp"); /* Mudança aqui! */
+  width: 26px;                /* Largura visível da bandeira na tabela */
+  height: 18px;               /* Altura visível da bandeira na tabela */
+  background-image: url("img/bandeiras.webp");
   background-repeat: no-repeat;
-  background-size: 192px 128px;
+  
+  /* Ajusta o tamanho total da folha para isolar o texto superior das células */
+  background-size: 290px 225px; 
   vertical-align: middle;
-  margin-right: 6px;
-  border: 1px solid #ddd;
+  margin-right: 5px;
+  border-radius: 2px;         /* Cantos levemente arredondados para acabamento */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15); /* Sombra sutil para dar o efeito de sticker */
 }
 
-/* POSICIONAMENTO DA GRADE (Mapeamento X e Y de cada país) */
+/* MAPEAMENTO CIRÚRGICO (X e Y)
+  Focado apenas no retângulo interno de cada país, ocultando as escritas.
+*/
 
 /* Linha 1 */
-.flag-UAE { background-position: 0px 0px; }
-.flag-ARG { background-position: -24px 0px; }
-.flag-AUT { background-position: -48px 0px; }
-.flag-BEL { background-position: -72px 0px; }
-.flag-CAN { background-position: -96px 0px; }
-.flag-BRA { background-position: -120px 0px; }
-.flag-BEN { background-position: -144px 0px; }
-.flag-BUL { background-position: -168px 0px; }
+.flag-CAN { background-position: -3px -12px; }
+.flag-USA { background-position: -39px -12px; }
+.flag-MEX { background-position: -75px -12px; }
+.flag-BRA { background-position: -111px -12px; }
+.flag-ARG { background-position: -147px -12px; }
+.flag-FRA { background-position: -183px -12px; }
+.flag-ESP { background-position: -219px -12px; }
+.flag-UFA { background-position: -255px -12px; } /* Usado para Azerbaijan/UFA na folha */
 
 /* Linha 2 */
-.flag-HUN { background-position: 0px -16px; }
-.flag-IRL { background-position: -24px -16px; }
-.flag-ESP { background-position: -48px -16px; }
-.flag-FRA { background-position: -72px -16px; }
-.flag-GUI { background-position: -96px -16px; }
-.flag-GRE { background-position: -120px -16px; }
-.flag-EST { background-position: -144px -16px; }
-.flag-FIN { background-position: -168px -16px; }
+.flag-GER { background-position: -3px -38px; }
+.flag-ANG { background-position: -39px -38px; }
+.flag-EUR { background-position: -75px -38px; }
+.flag-GIIR { background-position: -111px -38px; }
+.flag-ENG { background-position: -147px -38px; }
+.flag-ITA { background-position: -219px -38px; }
+.flag-POR { background-position: -255px -38px; }
 
 /* Linha 3 */
-.flag-JPN { background-position: 0px -32px; }
-.flag-KOR { background-position: -24px -32px; }
-.flag-LTU { background-position: -48px -32px; }
-.flag-LUX { background-position: -72px -32px; }
-.flag-LBY { background-position: -96px -32px; }
-.flag-MAR { background-position: -120px -32px; }
-.flag-MON { background-position: -144px -32px; }
-.flag-POL { background-position: -168px -32px; }
+.flag-BEL { background-position: -3px -64px; }
+.flag-CRO { background-position: -39px -64px; }
+.flag-NED { background-position: -75px -64px; }
+.flag-SEN { background-position: -147px -64px; }
+.flag-MAR { background-position: -183px -64px; }
+.flag-MEI { background-position: -219px -64px; }
+.flag-AFC { background-position: -255px -64px; }
 
 /* Linha 4 */
-.flag-NZL { background-position: 0px -48px; }
-.flag-PAN { background-position: -24px -48px; }
-.flag-SUD { background-position: -48px -48px; }
-.flag-SGP { background-position: -72px -48px; }
-.flag-SWE { background-position: -96px -48px; }
-.flag-RSA { background-position: -120px -48px; }
-.flag-TAN { background-position: -144px -48px; }
-.flag-UKR { background-position: -168px -48px; }
+.flag-NZZ { background-position: -3px -90px; }
+.flag-JPN { background-position: -39px -90px; }
+.flag-PAN { background-position: -75px -90px; }
+.flag-KOR { background-position: -111px -90px; }
+.flag-SUF { background-position: -147px -90px; }
+.flag-CAF { background-position: -183px -90px; }
+.flag-TAN { background-position: -219px -90px; }
+.flag-UKE { background-position: -255px -90px; }
 
 /* Linha 5 */
-.flag-PLE { background-position: 0px -64px; }
-.flag-SEN { background-position: -24px -64px; }
-.flag-SOM { background-position: -48px -64px; }
-.flag-TUR { background-position: -72px -64px; }
-.flag-ROU { background-position: -96px -64px; }
-.flag-NER { background-position: -120px -64px; }
-.flag-RUS { background-position: -144px -64px; }
-.flag-CHN { background-position: -168px -64px; }
+.flag-OFC { background-position: -3px -117px; }
+.flag-SOM { background-position: -75px -117px; }
+.flag-TUR { background-position: -111px -117px; }
+.flag-ROM { background-position: -183px -117px; }
+.flag-NER { background-position: -219px -117px; }
+.flag-RUS { background-position: -219px -117px; }
+.flag-CHN { background-position: -255px -117px; }
 
 /* Linha 6 */
-.flag-GER { background-position: 0px -80px; }
-.flag-DEN { background-position: -24px -80px; }
-.flag-USA { background-position: -48px -80px; }
-.flag-MAD { background-position: -96px -80px; }
-.flag-NGA { background-position: -72px -80px; }
-.flag-MLI { background-position: -120px -80px; }
-.flag-NED { background-position: -144px -80px; }
-.flag-NOR { background-position: -168px -80px; }
+.flag-DEN { background-position: -39px -143px; }
+.flag-MAD { background-position: -111px -143px; }
+.flag-NGA { background-position: -147px -143px; }
+.flag-MLI { background-position: -183px -143px; }
+.flag-NOR { background-position: -255px -143px; }
 
 /* Linha 7 */
-.flag-HON { background-position: 0px -96px; }
-.flag-JAM { background-position: -24px -96px; }
-.flag-PUR { background-position: -48px -96px; }
-.flag-CZE { background-position: -72px -96px; }
-.flag-SYR { background-position: -96px -96px; }
-.flag-CHA { background-position: -120px -96px; }
-.flag-THA { background-position: -144px -96px; }
-.flag-VIE { background-position: -168px -96px; }
+.flag-HON { background-position: -3px -169px; }
+.flag-JAM { background-position: -39px -169px; }
+.flag-PUR { background-position: -75px -169px; }
+.flag-CZE { background-position: -111px -169px; }
+.flag-SYR { background-position: -147px -169px; }
+.flag-CHA { background-position: -183px -169px; }
+.flag-THA { background-position: -219px -169px; }
+.flag-VIE { background-position: -255px -169px; }
 
 /* Linha 8 */
-.flag-ENG { background-position: 0px -112px; }
-.flag-IND { background-position: -24px -112px; }
-.flag-ISR { background-position: -48px -112px; }
-.flag-ISL { background-position: -72px -112px; }
-.flag-ITA { background-position: -96px -112px; }
-.flag-COL { background-position: -120px -112px; }
-.flag-CUB { background-position: -144px -112px; }
-.flag-CRC { background-position: -168px -112px; }
+.flag-IND { background-position: -39px -195px; }
+.flag-ISR { background-position: -75px -195px; }
+.flag-ISL { background-position: -111px -195px; }
+.flag-COL { background-position: -183px -195px; }
+.flag-CUB { background-position: -247px -195px; }
+.flag-CRC { background-position: -255px -195px; }
 
-/* Classes especiais para itens que não possuem bandeira na folha (opcional, evita quebras) */
-.flag-FWC, .flag-CC { display: none; }
+/* Ocultar elementos que não correspondem a seleções do array */
+.flag-FWC, .flag-CC { display: none !important; }
