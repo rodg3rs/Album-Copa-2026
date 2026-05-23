@@ -84,13 +84,13 @@
 
   // Monta tabela completa
   function buildTable() {
-let header = "<tr><th>Seleção</th>";
-for (let i=1;i<=20;i++) header += `<th>${i}</th>`;
-header += "</tr>";
-table.innerHTML = header;
+	let header = "<tr><th style='width: 80px !important; min-width: 80px !important; white-space: nowrap; text-align: left; padding-left: 5px;'>Seleção</th>";
+	for (let i=1;i<=20;i++) header += `<th>${i}</th>`;
+	header += "</tr>";
+	table.innerHTML = header;
 
     // FWC iniciais (0–8)
-    let rowFWC = `<tr><th>FWC 0–8</th>`;
+	let rowFWC = `<tr><th style='width: 80px !important; min-width: 80px !important; white-space: nowrap; text-align: left; padding-left: 5px;'>FWC 0–8</th>`;
     for (let i=0;i<=8;i++) {
       const code = `FWC${i}`;
       rowFWC += `<td class="stamp-cell" data-stamp="${code}">${i}</td>`;
@@ -99,8 +99,8 @@ table.innerHTML = header;
     table.innerHTML += rowFWC;
 
     // Seleções
-    for (let team of teams) {
-      let row = `<tr><th>${team}</th>`;
+	for (let team of teams) {
+	let row = `<tr><th style='width: 80px !important; min-width: 80px !important; white-space: nowrap; text-align: left; padding-left: 5px;'>${team}</th>`;
       for (let i=1;i<=20;i++) {
         const code = `${team}${i}`;
         row += `<td class="stamp-cell" data-stamp="${code}">${i}</td>`;
@@ -110,7 +110,7 @@ table.innerHTML = header;
     }
 
     // FWC adicionais (9–19)
-    let rowFWC2 = `<tr><th>FWC 9–19</th>`;
+	let rowFWC2 = `<tr><th style='width: 80px !important; min-width: 80px !important; white-space: nowrap; text-align: left; padding-left: 5px;'>FWC 9–19</th>`;
     for (let i=9;i<=19;i++) {
       const code = `FWC${i}`;
       rowFWC2 += `<td class="stamp-cell" data-stamp="${code}">${i}</td>`;
@@ -119,7 +119,7 @@ table.innerHTML = header;
     table.innerHTML += rowFWC2;
 
     // Coca-Cola (CC1–CC14)
-    let rowCC = `<tr><th>Coca-Cola</th>`;
+	let rowCC = `<tr><th style='width: 80px !important; min-width: 80px !important; white-space: nowrap; text-align: left; padding-left: 5px;'>Coca-Cola</th>`;
     for (let i=1;i<=14;i++) {
       const code = `CC${i}`;
       rowCC += `<td class="stamp-cell" data-stamp="${code}">${i}</td>`;
