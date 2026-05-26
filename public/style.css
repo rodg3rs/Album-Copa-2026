@@ -352,3 +352,11 @@ body::before {
   }
 }
 
+/* Estilo para as bandeiras individuais via tag IMG */
+.country-flag {
+  width: 24px;
+  height: auto;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); /* Mantém o efeito sutil de sticker */
+  display: inline-block;
+}
